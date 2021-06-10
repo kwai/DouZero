@@ -6,11 +6,12 @@ DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikiped
 *   Online Demo: [https://www.douzero.org/](https://www.douzero.org/)
 *   Run the Demo Locally: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
 *   Paper: 
-*   Related Project: [https://github.com/datamllab/rlcard](https://github.com/datamllab/rlcard)
+*   Related Project: [RLCard Project](https://github.com/datamllab/rlcard)
+*   Related Resources: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 
 **Community:**
 *  **Slack**: Discuss in [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) channel.
-*  **QQ Group**:
+*  **QQ Group**: Join our QQ group 819204202. Password: douzeroqqgroup
 
 ## Cite this Work
 

@@ -96,7 +96,7 @@ For more customized configuration of training, see the following optional argume
 ## Evaluation
 The evaluation can be performed with GPU or CPU (GPU will be much faster). Pretrained model is available at [Google Drive](https://drive.google.com/drive/folders/1NmM2cXnI5CIWHaLJeoDZMiwt6lOTV_UB?usp=sharing) or [百度网盘](https://pan.baidu.com/s/18g-JUKad6D8rmBONXUDuOQ), 提取码: 4624. Put pre-trained weights in `baselines/`. The performance is evaluated through self-play. We have provided pre-trained models and some heuristics as baselines:
 *   [random](douzero/evaluation/random_agent.py): agents that play randomly (uniformly)
-*   [rlcard](douzero/evaluation/rlcard/agent.py): the rule-based agent in [RLCard](https://github.com/datamllab/rlcard)
+*   [rlcard](douzero/evaluation/rlcard_agent.py): the rule-based agent in [RLCard](https://github.com/datamllab/rlcard)
 *   SL (`baselines/sl/`): the pre-trained deep agents on human data
 *   DouZero-ADP (`baselines/douzero_ADP/`): the pretrained DouZero agents with Average Difference Points (ADP) as objective
 *   DouZero-WP (`baselines/douzero_WP/`): the pretrained DouZero agents with Winning Percentage (WP) as objective

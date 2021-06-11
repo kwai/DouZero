@@ -1,6 +1,6 @@
 import setuptools
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
@@ -13,9 +13,9 @@ setuptools.setup(
     description="DouZero DouDizhu AI",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="",
+    url="https://github.com/kwai/DouZero",
     license='Apache License 2.0',
-    keywords=["DouDizhu", "RL"],
+    keywords=["DouDizhu", "AI", "Reinforcment Learning", "RL", "Torch", "Poker"],
     packages=setuptools.find_packages(),
     install_requires=[
         'torch',
@@ -26,7 +26,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.6",
-        "License :: OSI Approved :: Apache 2.0 License",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
 )

@@ -11,7 +11,7 @@ setuptools.setup(
     author="Kuai",
     author_email="daochen.zha@tamu.edu",
     description="DouZero DouDizhu AI",
-    long_description='long_description',
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="",
     license='Apache License 2.0',

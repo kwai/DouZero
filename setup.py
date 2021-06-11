@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 setuptools.setup(
     name="douzero",
     version=VERSION,
-    author="Kuai",
+    author="Daochen Zha",
     author_email="daochen.zha@tamu.edu",
     description="DouZero DouDizhu AI",
     long_description=long_description,

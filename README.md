@@ -24,7 +24,7 @@ In this work, we propose Deep Monte Carlo (DMC) algorithm with action encoding a
 ## Installation
 Clone the repo with
 ```
-git clone https://github.com/daochenzha/douzero.git
+git clone https://github.com/kwai/DouZero.git
 ```
 Make sure you have python 3.6+ installed. Install dependencies:
 ```

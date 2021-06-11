@@ -26,7 +26,7 @@ Clone the repo with
 ```
 git clone https://github.com/daochenzha/douzero.git
 ```
-Make sure you have python 3.5+ installed. Install dependencies:
+Make sure you have python 3.6+ installed. Install dependencies:
 ```
 cd douzero
 pip3 install -r requirements.txt

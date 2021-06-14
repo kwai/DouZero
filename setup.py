@@ -19,6 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'torch',
+        'rlcard'
     ],
     requires_python='>=3.6',
     classifiers=[

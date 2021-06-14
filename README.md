@@ -1,11 +1,14 @@
 # [ICML 2021] DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning
 <img width="500" src="./imgs/douzero_logo.jpg" alt="Logo" />
 
+[![Downloads](https://pepy.tech/badge/douzero)](https://pepy.tech/project/douzero)
+[![Downloads](https://pepy.tech/badge/douzero/month)](https://pepy.tech/project/douzero)
+
 DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikipedia.org/wiki/Dou_dizhu) ([斗地主](https://baike.baidu.com/item/%E6%96%97%E5%9C%B0%E4%B8%BB/177997)), the most popular card game in China. It is a shedding-type game where the player’s objective is to empty one’s hand of all cards before other players. DouDizhu is a very challenging domain with competition, collaboration, imperfect information, large state space, and particularly a massive set of possible actions where the legal actions vary significantly from turn to turn. DouZero is developed by AI Platform, Kwai Inc. (快手).
 
 *   Online Demo: [https://www.douzero.org/](https://www.douzero.org/)
 *   Run the Demo Locally: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
-*   Paper: 
+*   Paper: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
 *   Related Project: [RLCard Project](https://github.com/datamllab/rlcard)
 *   Related Resources: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 
@@ -14,12 +17,23 @@ DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikiped
 *  **QQ Group**: Join our QQ group 819204202. Password: douzeroqqgroup
 
 ## Cite this Work
+For now, please cite our Arxiv version:
 
+Daochen Zha, Jingru Xie, Wenye Ma, Sheng Zhang, Xiangru Lian, Xia Hu, and Ji Liu. "DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning." arXiv preprint arXiv:2106.06135 (2021).
+
+```bibtex
+@article{zha2021douzero,
+  title={DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning},
+  author={Zha, Daochen and Xie, Jingru and Ma, Wenye and Zhang, Sheng and Lian, Xiangru and Hu, Xia and Liu, Ji},
+  journal={arXiv preprint arXiv:2106.06135},
+  year={2021}
+}
+```
 
 ## What Makes DouDizhu Challenging?
 In addition to the challenge of imperfect information, DouDizhu has huge state and action spaces. In particular, the action space of DouDizhu is 10^4 (see [this table](https://github.com/datamllab/rlcard#available-environments)). Unfortunately, most reinforcement learning algorithms can only handle very small action spaces. Moreover, the players in DouDizhu need to both compete and cooperate with others in a partially-observable environment with limited communication, i.e., two Peasants players will play as a team to fight against the Landlord player. Modeling both competing and cooperation is an open research challenge.
 
-In this work, we propose Deep Monte Carlo (DMC) algorithm with action encoding and parallel actors. This leads to a very simple yet surprisingly effective solution for DouDizhu. Please read our paper for more details.
+In this work, we propose Deep Monte Carlo (DMC) algorithm with action encoding and parallel actors. This leads to a very simple yet surprisingly effective solution for DouDizhu. Please read [our paper](https://arxiv.org/abs/2106.06135) for more details.
 
 ## Installation
 Clone the repo with

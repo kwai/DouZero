@@ -19,7 +19,7 @@ DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikiped
 ## Cite this Work
 For now, please cite our Arxiv version:
 
-Daochen Zha, Jingru Xie, Wenye Ma, Sheng Zhang, Xiangru Lian, Xia Hu, and Ji Liu. "DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning." arXiv preprint arXiv:2106.06135 (2021).
+Zha, Daochen, et al. "DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning." arXiv preprint arXiv:2106.06135 (2021).
 
 ```bibtex
 @article{zha2021douzero,

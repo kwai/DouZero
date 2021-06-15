@@ -1,5 +1,5 @@
 # [ICML 2021] DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning
-<img width="500" src="./imgs/douzero_logo.jpg" alt="Logo" />
+<img width="500" src="https://raw.githubusercontent.com/kwai/DouZero/main/imgs/douzero_logo.jpg" alt="Logo" />
 
 [![Downloads](https://pepy.tech/badge/douzero)](https://pepy.tech/project/douzero)
 [![Downloads](https://pepy.tech/badge/douzero/month)](https://pepy.tech/project/douzero)
@@ -15,6 +15,9 @@ DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikiped
 **Community:**
 *  **Slack**: Discuss in [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) channel.
 *  **QQ Group**: Join our QQ group 819204202. Password: douzeroqqgroup
+
+**Demo**
+<img width="500" src="https://daochenzha.github.io/files/douzero_demo.png" alt="Demo" />
 
 ## Cite this Work
 For now, please cite our Arxiv version:

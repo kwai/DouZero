@@ -20,7 +20,7 @@ DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikiped
 
 **Demo**
 
-<img width="500" src="https://daochenzha.github.io/files/douzero_demo.png" alt="Demo" />
+<img width="500" src="https://daochenzha.github.io/files/douzero-gif.gif" alt="Demo" />
 
 ## Cite this Work
 For now, please cite our Arxiv version:

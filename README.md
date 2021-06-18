@@ -152,7 +152,7 @@ sh get_most_recent.sh douzero_checkpoints/douzero/
 The most recent model will be in `most_recent_model`.
 
 ## Core Team
-*   Algorithm: [Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, Xiangru Lian, Xia Hu, Ji Liu
+*   Algorithm: [Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)
 *   GUI Demo: [Songyi Huang](https://github.com/hsywhu)
 
 ## Acknowlegements

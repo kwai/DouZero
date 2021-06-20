@@ -10,7 +10,7 @@ DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikiped
 *   Online Demo: [https://www.douzero.org/](https://www.douzero.org/)
 *   Run the Demo Locally: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
 *   Paper: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
-*   Related Project: [RLCard Project](https://github.com/datamllab/rlcard)
+*   Try DouZero in other games: [RLCard Project](https://github.com/datamllab/rlcard)
 *   Related Resources: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 *   Google Colab: [jupyter notebook](https://github.com/daochenzha/douzero-colab/blob/main/douzero-colab.ipynb)
 
@@ -73,6 +73,8 @@ For example, if we have 4 GPUs, where we want to use the first 3 GPUs to have 15
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
 ```
+**Known issues for Windows systems:** You may encounter `operation not supported` error if you use a Windows system. This is because doing multiprocessing on CUDA tensors are not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Thus, we recommend using a Linux server to train the models. Nontheless, Windows users can still evaluate the models with multiple processes and [run the demo locally](https://github.com/datamllab/rlcard-showdown). Please contact us if you find any solutions!
+
 For more customized configuration of training, see the following optional arguments:
 ```
 --xpid XPID           Experiment id (default: douzero)

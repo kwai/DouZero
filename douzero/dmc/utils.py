@@ -31,6 +31,8 @@ log.propagate = False
 log.addHandler(shandle)
 log.setLevel(logging.INFO)
 
+# Buffers are used to transfer data between actor processes
+# and learner processes. They are shared tensors in GPU
 Buffers = typing.Dict[str, typing.List[torch.Tensor]]
 
 def create_env(flags):
@@ -41,6 +43,11 @@ def get_batch(free_queue,
               buffers,
               flags,
               lock):
+    """
+    This function will sample a batch from the buffers based
+    on the indices received from the full queue. It will also
+    free the indices by sending it to full_queue.
+    """
     with lock:
         indices = [full_queue.get() for _ in range(flags.batch_size)]
     batch = {
@@ -52,6 +59,9 @@ def get_batch(free_queue,
     return batch
 
 def create_optimizers(flags, learner_model):
+    """
+    Create three optimizers for the three positions
+    """
     positions = ['landlord', 'landlord_up', 'landlord_down']
     optimizers = {}
     for position in positions:
@@ -65,6 +75,11 @@ def create_optimizers(flags, learner_model):
     return optimizers
 
 def create_buffers(flags):
+    """
+    We create buffers for different positions as well as
+    for different positions. That is each device will have
+    three buffers for the three positions.
+    """
     T = flags.unroll_length
     positions = ['landlord', 'landlord_up', 'landlord_down']
     buffers = []
@@ -89,6 +104,11 @@ def create_buffers(flags):
     return buffers
 
 def act(i, device, free_queue, full_queue, model, buffers, flags):
+    """
+    This function will run forever until we stop it. It will generate
+    data from the environment and send the data to buffer. It uses
+    a free queue and full queue to syncup with the main process.
+    """
     positions = ['landlord', 'landlord_up', 'landlord_down']
     try:
         T = flags.unroll_length

@@ -55,6 +55,12 @@ def learn(position,
         return stats
 
 def train(flags):  
+    """
+    This is the main funtion for training. It will first
+    initilize everything, such as buffers, optimizers, etc.
+    Then it will start subprocesses as actors. It will call
+    learn function in with multi-thread.
+    """
     plogger = FileWriter(
         xpid=flags.xpid,
         xp_args=flags.__dict__,

@@ -1,3 +1,8 @@
+"""
+This file includes the torch models. We wrap the three
+models into one class for convenience.
+"""
+
 import numpy as np
 
 import torch
@@ -73,12 +78,17 @@ class FarmerLstmModel(nn.Module):
                 action = torch.argmax(x,dim=0)[0]
             return dict(action=action)
 
+# Model dict is only used in evaluation but not training
 model_dict = {}
 model_dict['landlord'] = LandlordLstmModel
 model_dict['landlord_up'] = FarmerLstmModel
 model_dict['landlord_down'] = FarmerLstmModel
 
 class Model:
+    """
+    The wrapper for the three models. We also wrap several
+    interfaces such as share_memory, eval, etc.
+    """
     def __init__(self, device=0):
         self.models = {}
         self.models['landlord'] = LandlordLstmModel().to(torch.device('cuda:'+str(device)))

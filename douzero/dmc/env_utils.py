@@ -1,7 +1,16 @@
+"""
+Here, we wrap the original environment to make it easier
+to use. When a game is finished, instead of mannualy reseting
+the environment, we do it automatically.
+"""
 import numpy as np
 import torch 
 
 def _format_observation(obs, device):
+    """
+    A utility function to process observations and
+    move them to CUDA.
+    """
     position = obs['position']
     device = torch.device('cuda:'+str(device))
     x_batch = torch.from_numpy(obs['x_batch']).to(device)
@@ -16,6 +25,8 @@ def _format_observation(obs, device):
 
 class Environment:
     def __init__(self, env, device):
+        """ Initialzie this environment wrapper
+        """
         self.env = env
         self.device = device
         self.episode_return = None

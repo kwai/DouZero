@@ -5,12 +5,12 @@
 [![Downloads](https://pepy.tech/badge/douzero/month)](https://pepy.tech/project/douzero)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/daochenzha/douzero-colab/blob/main/douzero-colab.ipynb)
 
-DouZero is a reinforcement learning framework for  [DouDizhu](https://en.wikipedia.org/wiki/Dou_dizhu) ([斗地主](https://baike.baidu.com/item/%E6%96%97%E5%9C%B0%E4%B8%BB/177997)), the most popular card game in China. It is a shedding-type game where the player’s objective is to empty one’s hand of all cards before other players. DouDizhu is a very challenging domain with competition, collaboration, imperfect information, large state space, and particularly a massive set of possible actions where the legal actions vary significantly from turn to turn. DouZero is developed by AI Platform, Kwai Inc. (快手).
+DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedia.org/wiki/Dou_dizhu) ([斗地主](https://baike.baidu.com/item/%E6%96%97%E5%9C%B0%E4%B8%BB/177997)), the most popular card game in China. It is a shedding-type game where the player’s objective is to empty one’s hand of all cards before other players. DouDizhu is a very challenging domain with competition, collaboration, imperfect information, large state space, and particularly a massive set of possible actions where the legal actions vary significantly from turn to turn. DouZero is developed by AI Platform, Kwai Inc. (快手).
 
 *   Online Demo: [https://www.douzero.org/](https://www.douzero.org/)
 *   Run the Demo Locally: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
 *   Paper: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
-*   Try DouZero in other games: [RLCard Project](https://github.com/datamllab/rlcard)
+*   Related Project: [RLCard Project](https://github.com/datamllab/rlcard)
 *   Related Resources: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 *   Google Colab: [jupyter notebook](https://github.com/daochenzha/douzero-colab/blob/main/douzero-colab.ipynb)
 

@@ -73,7 +73,7 @@ For example, if we have 4 GPUs, where we want to use the first 3 GPUs to have 15
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
 ```
-**Known issues for Windows systems:** You may encounter `operation not supported` error if you use a Windows system. This is because doing multiprocessing on CUDA tensors are not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Thus, we recommend using a Linux server to train the models. Nontheless, Windows users can still evaluate the models with multiple processes and [run the demo locally](https://github.com/datamllab/rlcard-showdown). Please contact us if you find any solutions!
+**Known issues for Windows system:** You may encounter `operation not supported` error if you use a Windows system. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Thus, we recommend using a Linux server to train the models. Nonetheless, Windows users can still evaluate the models with multiple processes and [run the demo locally](https://github.com/datamllab/rlcard-showdown). Please contact us if you find any solutions!
 
 For more customized configuration of training, see the following optional arguments:
 ```

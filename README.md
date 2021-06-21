@@ -40,7 +40,9 @@ In addition to the challenge of imperfect information, DouDizhu has huge state a
 In this work, we propose Deep Monte Carlo (DMC) algorithm with action encoding and parallel actors. This leads to a very simple yet surprisingly effective solution for DouDizhu. Please read [our paper](https://arxiv.org/abs/2106.06135) for more details.
 
 ## Installation
-Clone the repo with
+The training code is designed for GPUs. Thus, you need to first install CUDA if you want to train models. You may refer to [this guide](https://docs.nvidia.com/cuda/index.html#installation-guides). For evaluation, CUDA is optional and you can use CPU for evaluation.
+
+First, clone the repo with
 ```
 git clone https://github.com/kwai/DouZero.git
 ```

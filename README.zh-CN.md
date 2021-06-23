@@ -1,4 +1,4 @@
-# [ICML 2021] DouZero: 从零开始通过自我博弈强化学习来学打斗地主（开发中）
+# [ICML 2021] DouZero: 从零开始通过自我博弈强化学习来学打斗地主
 <img width="500" src="https://gitee.com/daochenzha/DouZero/raw/main/imgs/douzero_logo.jpg" alt="Logo" />
 
 [![Downloads](https://pepy.tech/badge/douzero)](https://pepy.tech/project/douzero)

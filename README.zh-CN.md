@@ -42,7 +42,7 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 ## 安装
 训练部分的代码是基于GPU设计的，因此如果想要训练模型，您需要先安装CUDA。安装步骤可以参考[本教程](https://docs.nvidia.com/cuda/index.html#installation-guides)。对于评估部分，CUDA是可选项，您可以使用CPU进行评估。
 
-首先，Clone本仓库（如果您访问Github较慢，可以使用[Gitee镜像](https://gitee.com/daochenzha/DouZero)）：
+首先，Clone本仓库（如果您访问Github较慢，国内用户可以使用[Gitee镜像](https://gitee.com/daochenzha/DouZero)）：
 ```
 git clone https://github.com/kwai/DouZero.git
 ```
@@ -56,7 +56,7 @@ pip3 install -r requirements.txt
 ```
 pip3 install douzero
 ```
-如果您访问较慢，可以通过清华镜像源安装：
+如果您访问较慢，国内用户可以通过清华镜像源安装：
 ```
 pip3 install douzero -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```

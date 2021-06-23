@@ -5,6 +5,8 @@
 [![Downloads](https://pepy.tech/badge/douzero/month)](https://pepy.tech/project/douzero)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/daochenzha/douzero-colab/blob/main/douzero-colab.ipynb)
 
+[中文文档](README.zh-CN.md)
+
 DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedia.org/wiki/Dou_dizhu) ([斗地主](https://baike.baidu.com/item/%E6%96%97%E5%9C%B0%E4%B8%BB/177997)), the most popular card game in China. It is a shedding-type game where the player’s objective is to empty one’s hand of all cards before other players. DouDizhu is a very challenging domain with competition, collaboration, imperfect information, large state space, and particularly a massive set of possible actions where the legal actions vary significantly from turn to turn. DouZero is developed by AI Platform, Kwai Inc. (快手).
 
 *   Online Demo: [https://www.douzero.org/](https://www.douzero.org/)
@@ -43,7 +45,7 @@ In this work, we propose Deep Monte Carlo (DMC) algorithm with action encoding a
 ## Installation
 The training code is designed for GPUs. Thus, you need to first install CUDA if you want to train models. You may refer to [this guide](https://docs.nvidia.com/cuda/index.html#installation-guides). For evaluation, CUDA is optional and you can use CPU for evaluation.
 
-First, clone the repo with
+First, clone the repo with (if you are in China and Github is slow, you can use the mirror in [Gitee](https://gitee.com/daochenzha/DouZero)):
 ```
 git clone https://github.com/kwai/DouZero.git
 ```
@@ -55,6 +57,10 @@ pip3 install -r requirements.txt
 We recommend installing the stable version of DouZero with
 ```
 pip3 install douzero
+```
+If you are in China and the above command is too slow, you can use the mirror provided by Tsinghua University:
+```
+pip3 install douzero -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 or install the up-to-date version (it could be not stable) with
 ```

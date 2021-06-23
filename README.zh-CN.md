@@ -10,6 +10,7 @@
 DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有挑战性。它包含合作、竞争、非完全信息、庞大的状态空间。斗地主也有非常大的状态空间，并且每一步合法的牌型会非常不一样。DouZero由快手AI平台部开发。
 
 *   在线演示: [https://www.douzero.org/](https://www.douzero.org/)
+      * :loudspeaker: 抢先体验叫牌版本（调试中）: [https://www.douzero.org/bid](https://www.douzero.org/bid)
 *   离线运行演示: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
 *   论文: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
 *   相关仓库: [RLCard Project](https://github.com/datamllab/rlcard)
@@ -79,7 +80,7 @@ python3 train.py
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
 ```
-**Windows系统下的已知问题：**如果你使用的是Windows系统，你可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。因此我们推荐使用Linux服务器进行模型训练。但Windows用户仍可以使用多线程进行模型评估，并且[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果你发现解决该问题的方法，请联系我们！
+**Windows系统下的已知问题**：如果你使用的是Windows系统，你可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。因此我们推荐使用Linux服务器进行模型训练。但Windows用户仍可以使用多线程进行模型评估，并且[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果你发现解决该问题的方法，请联系我们！
 
 其他定制化的训练配置可以参考以下可选项：
 ```

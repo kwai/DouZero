@@ -19,7 +19,7 @@ DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedi
 *  **Slack**: Discuss in [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) channel.
 *  **QQ Group**: Join our QQ group 819204202. Password: douzeroqqgroup
 
-<img width="500" src="https://daochenzha.github.io/files/douzero-gif.gif" alt="Demo" />
+<img width="500" src="https://douzero.org/public/demo.gif" alt="Demo" />
 
 ## Cite this Work
 For now, please cite our Arxiv version:

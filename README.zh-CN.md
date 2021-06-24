@@ -25,6 +25,8 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 ## 引用
 如果您用到我们的项目，请添加以下引用：
 
+Zha, Daochen, et al. "DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning." arXiv preprint arXiv:2106.06135 (2021).
+
 ```bibtex
 @article{zha2021douzero,
   title={DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning},
@@ -42,7 +44,7 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 ## 安装
 训练部分的代码是基于GPU设计的，因此如果想要训练模型，您需要先安装CUDA。安装步骤可以参考[本教程](https://docs.nvidia.com/cuda/index.html#installation-guides)。对于评估部分，CUDA是可选项，您可以使用CPU进行评估。
 
-首先，Clone本仓库（如果您访问Github较慢，国内用户可以使用[Gitee镜像](https://gitee.com/daochenzha/DouZero)）：
+首先，克隆本仓库（如果您访问Github较慢，国内用户可以使用[Gitee镜像](https://gitee.com/daochenzha/DouZero)）：
 ```
 git clone https://github.com/kwai/DouZero.git
 ```

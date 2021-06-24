@@ -305,10 +305,6 @@ def _get_obs_landlord(infoset):
     for j, action in enumerate(infoset.legal_actions):
         my_action_batch[j, :] = _cards2array(action)
 
-    last_action = _cards2array(infoset.last_move)
-    last_action_batch = np.repeat(last_action[np.newaxis, :],
-                                  num_legal_actions, axis=0)
-
     landlord_up_num_cards_left = _get_one_hot_array(
         infoset.num_cards_left_dict['landlord_up'], 17)
     landlord_up_num_cards_left_batch = np.repeat(
@@ -392,10 +388,6 @@ def _get_obs_landlord_up(infoset):
     my_action_batch = np.zeros(my_handcards_batch.shape)
     for j, action in enumerate(infoset.legal_actions):
         my_action_batch[j, :] = _cards2array(action)
-
-    last_action = _cards2array(infoset.last_move)
-    last_action_batch = np.repeat(last_action[np.newaxis, :],
-                                  num_legal_actions, axis=0)
 
     last_landlord_action = _cards2array(
         infoset.last_move_dict['landlord'])
@@ -494,10 +486,6 @@ def _get_obs_landlord_down(infoset):
     my_action_batch = np.zeros(my_handcards_batch.shape)
     for j, action in enumerate(infoset.legal_actions):
         my_action_batch[j, :] = _cards2array(action)
-
-    last_action = _cards2array(infoset.last_move)
-    last_action_batch = np.repeat(last_action[np.newaxis, :],
-                                  num_legal_actions, axis=0)
 
     last_landlord_action = _cards2array(
         infoset.last_move_dict['landlord'])

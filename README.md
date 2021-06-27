@@ -162,7 +162,7 @@ sh get_most_recent.sh douzero_checkpoints/douzero/
 The most recent model will be in `most_recent_model`.
 
 ## Issues in Windows
-You may encounter `operation not supported` error if you use a Windows system to train. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Similarly, you may fail to launch multiple processes when running the evaluation script. Thus, we recommend using a Linux server or macOS system to train the models. Please contact us if you find any solutions!
+You may encounter `operation not supported` error if you use a Windows system to train. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Similarly, you may fail to launch multiple processes when running the evaluation script. Thus, we recommend using a Linux server or macOS system to train or evaluate the models. Please contact us if you find any solutions!
 
 ## Core Team
 *   Algorithm: [Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)

@@ -7,7 +7,7 @@
 
 [English README](README.md)
 
-DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有挑战性。它包含合作、竞争、非完全信息、庞大的状态空间。斗地主也有非常大的状态空间，并且每一步合法的牌型会非常不一样。DouZero由快手AI平台部开发。
+DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有挑战性。它包含合作、竞争、非完全信息、庞大的状态空间。斗地主也有非常大的动作空间，并且每一步合法的牌型会非常不一样。DouZero由快手AI平台部开发。
 
 *   在线演示: [https://www.douzero.org/](https://www.douzero.org/)
       * :loudspeaker: 抢先体验叫牌版本（调试中）: [https://www.douzero.org/bid](https://www.douzero.org/bid)
@@ -42,7 +42,7 @@ Zha, Daochen, et al. "DouZero: Mastering DouDizhu with Self-Play Deep Reinforcem
 在本研究工作中，我们提出了将深度蒙特卡洛（Deep Monte Carlo, DMC）与动作编码和并行演员（Parallel Actors）相结合的方法，为斗地主提供了一个简单而有效的解决方案，详见[我们的论文](https://arxiv.org/abs/2106.06135)。
 
 ## 安装
-训练部分的代码是基于GPU设计的，因此如果想要训练模型，您需要先安装CUDA。安装步骤可以参考[本教程](https://docs.nvidia.com/cuda/index.html#installation-guides)。对于评估部分，CUDA是可选项，您可以使用CPU进行评估。
+训练部分的代码是基于GPU设计的，因此如果想要训练模型，您需要先安装CUDA。安装步骤可以参考[官网教程](https://docs.nvidia.com/cuda/index.html#installation-guides)。对于评估部分，CUDA是可选项，您可以使用CPU进行评估。
 
 首先，克隆本仓库（如果您访问Github较慢，国内用户可以使用[Gitee镜像](https://gitee.com/daochenzha/DouZero)）：
 ```
@@ -66,7 +66,7 @@ pip3 install douzero -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 pip3 install -e .
 ```
-我们不建议用Windows系统进行训练或评估。Windows系统可能会遇到些问题，详见[Windows下的问题](README.zh-CN.md#Windows下的问题)。但Windows用户仍可以使用多线程进行模型评估，并且[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果你发现解决该问题的方法，请联系我们！
+我们不建议用Windows系统进行训练或评估。Windows系统可能会遇到些问题，详见[Windows下的问题](README.zh-CN.md#Windows下的问题)。但Windows用户仍可以[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果您发现解决方法，请联系我们！
 
 ## 训练
 假定您至少拥有一块可用的GPU，运行
@@ -162,7 +162,7 @@ sh get_most_recent.sh douzero_checkpoints/douzero/
 之后您可以在`most_recent_model`路径下找到最近一次保存的模型。
 
 ## Windows下的问题
-如果你使用的是Windows系统，你可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。在评估中跑多进程也可能遇到问题。因此我们推荐使用Linux服务器或者macOS系统进行模型训练或评估。
+如果您使用的是Windows系统，您将可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。在评估中跑多进程也可能遇到问题。因此我们推荐使用Linux服务器或者macOS系统进行模型训练或评估。
 
 ## 核心团队
 *   算法：[Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)

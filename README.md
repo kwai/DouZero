@@ -66,6 +66,7 @@ or install the up-to-date version (it could be not stable) with
 ```
 pip3 install -e .
 ```
+If you want to train or evaluate DouZero, you are not recommended to use a Windows machine. While it is possible to use Windows, you may encounter some errors. See [Issues in Windows](README.md#issues-in-windows). Nonetheless, Windows users can still [run the demo locally](https://github.com/datamllab/rlcard-showdown).  
 
 ## Training
 We assume you have at least one GPU available. Run
@@ -82,8 +83,6 @@ For example, if we have 4 GPUs, where we want to use the first 3 GPUs to have 15
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
 ```
-**Known issues for Windows system:** You may encounter `operation not supported` error if you use a Windows system. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Thus, we recommend using a Linux server to train the models. Nonetheless, Windows users can still evaluate the models with multiple processes and [run the demo locally](https://github.com/datamllab/rlcard-showdown). Please contact us if you find any solutions!
-
 For more customized configuration of training, see the following optional arguments:
 ```
 --xpid XPID           Experiment id (default: douzero)
@@ -161,6 +160,9 @@ By default, our model will be saved in `douzero_checkpoints/douzero` every half 
 sh get_most_recent.sh douzero_checkpoints/douzero/
 ```
 The most recent model will be in `most_recent_model`.
+
+## Issues in Windows
+You may encounter `operation not supported` error if you use a Windows system to train. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Similarly, you may fail to launch multiple processes when running the evaluation script. Thus, we recommend using a Linux server or macOS system to train the models. Please contact us if you find any solutions!
 
 ## Core Team
 *   Algorithm: [Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)

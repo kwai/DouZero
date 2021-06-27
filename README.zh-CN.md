@@ -66,6 +66,7 @@ pip3 install douzero -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 pip3 install -e .
 ```
+我们不建议用Windows系统进行训练或评估。Windows系统可能会遇到些问题，详见[Windows下的问题](README.zh-CN.md#Windows下的问题)。但Windows用户仍可以使用多线程进行模型评估，并且[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果你发现解决该问题的方法，请联系我们！
 
 ## 训练
 假定您至少拥有一块可用的GPU，运行
@@ -82,8 +83,6 @@ python3 train.py
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
 ```
-**Windows系统下的已知问题**：如果你使用的是Windows系统，你可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。因此我们推荐使用Linux服务器进行模型训练。但Windows用户仍可以使用多线程进行模型评估，并且[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果你发现解决该问题的方法，请联系我们！
-
 其他定制化的训练配置可以参考以下可选项：
 ```
 --xpid XPID           实验id（默认值：douzero）
@@ -161,6 +160,9 @@ python3 evaluate.py --landlord rlcard --landlord_up baselines/douzero_ADP/landlo
 sh get_most_recent.sh douzero_checkpoints/douzero/
 ```
 之后您可以在`most_recent_model`路径下找到最近一次保存的模型。
+
+## Windows下的问题
+如果你使用的是Windows系统，你可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。在评估中跑多进程也可能遇到问题。因此我们推荐使用Linux服务器或者macOS系统进行模型训练或评估。
 
 ## 核心团队
 *   算法：[Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)

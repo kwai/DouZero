@@ -77,8 +77,8 @@ def create_optimizers(flags, learner_model):
 def create_buffers(flags):
     """
     We create buffers for different positions as well as
-    for different positions. That is each device will have
-    three buffers for the three positions.
+    for different devices (i.e., GPU). That is, each device
+    will have three buffers for the three positions.
     """
     T = flags.unroll_length
     positions = ['landlord', 'landlord_up', 'landlord_down']
@@ -182,6 +182,11 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
         raise e
 
 def _cards2tensor(list_cards):
+    """
+    Convert a list of integers to the tensor
+    representation
+    See Figure 2 in https://arxiv.org/pdf/2106.06135.pdf
+    """
     if len(list_cards) == 0:
         return torch.zeros(54, dtype=torch.int8)
 

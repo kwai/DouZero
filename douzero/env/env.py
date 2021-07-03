@@ -25,10 +25,10 @@ class Env:
     def __init__(self, objective):
         """
         Objective is wp/adp. It indicates whether considers
-        bomb in reward calculation. Here we use dummy agents.
+        bomb in reward calculation. Here, we use dummy agents.
         This is because, in the orignial game, the players
-        are are within the game. Here, we want to isolate
-        player and environments to have a more gym style
+        are `in` the game. Here, we want to isolate
+        players and environments to have a more gym style
         interface. To achieve this, we use dummy players
         to play. For each move, we tell the corresponding
         dummy player which action to play, then the player
@@ -50,7 +50,7 @@ class Env:
     def reset(self):
         """
         Every time reset is called, the environment
-        will be re-intialized with a new deck of cards.
+        will be re-initialized with a new deck of cards.
         This function is usually called when a game is over.
         """
         self._env.reset()
@@ -158,7 +158,7 @@ class DummyAgent(object):
     """
     Dummy agent is designed to easily interact with the
     game engine. The agent will first be told what action
-    to do next. Then the environment will call this agent
+    to perform. Then the environment will call this agent
     to perform the actual action. This can help us to
     isolate environment and agents towards a gym like
     interface.
@@ -169,7 +169,7 @@ class DummyAgent(object):
 
     def act(self, infoset):
         """
-        Simply return the action the is set previously.
+        Simply return the action that is set previously.
         """
         assert self.action in infoset.legal_actions
         return self.action
@@ -177,7 +177,7 @@ class DummyAgent(object):
     def set_action(self, action):
         """
         The environment uses this function to tell
-        the dummy agent what to do next.
+        the dummy agent what to do.
         """
         self.action = action
 
@@ -253,7 +253,7 @@ def _action_seq_list2array(action_seq_list):
     three moves is a round in DouDizhu, we concatenate
     the representations for each consecutive three moves.
     Finally, we obtain a 5x162 matrix, which will be fed
-    in LSTM for encoding.
+    into LSTM for encoding.
     """
     action_seq_array = np.zeros((len(action_seq_list), 54))
     for row, list_cards in enumerate(action_seq_list):

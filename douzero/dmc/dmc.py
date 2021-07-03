@@ -58,8 +58,8 @@ def train(flags):
     """
     This is the main funtion for training. It will first
     initilize everything, such as buffers, optimizers, etc.
-    Then it will start subprocesses as actors. It will call
-    learn function in with multi-thread.
+    Then it will start subprocesses as actors. Then, it will call
+    learning function with  multiple threads.
     """
     plogger = FileWriter(
         xpid=flags.xpid,

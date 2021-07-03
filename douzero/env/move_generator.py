@@ -3,7 +3,9 @@ import collections
 import itertools
 
 class MovesGener(object):
-
+    """
+    This is for generating the possible combinations
+    """
     def __init__(self, cards_list):
         self.cards_list = cards_list
         self.cards_dict = collections.defaultdict(int)

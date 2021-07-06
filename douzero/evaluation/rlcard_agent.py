@@ -83,8 +83,8 @@ class RLCardAgent(object):
                 action = random.choice(infoset.legal_actions)
         except:
             action = random.choice(infoset.legal_actions)
-            import traceback
-            traceback.print_exc()
+            #import traceback
+            #traceback.print_exc()
 
         assert action in infoset.legal_actions
 

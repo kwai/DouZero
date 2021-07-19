@@ -18,7 +18,7 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 
 **社区:**
 *  **Slack**: 加入 [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) 频道.
-*  **QQ群**: 加入我们的QQ群819204202. 密码: douzeroqqgroup
+*  **QQ群**: 加入我们的QQ群819204202. 如果群满，可加入QQ二群954183174. 密码: douzeroqqgroup
 
 <img width="500" src="https://douzero.org/public/demo.gif" alt="Demo" />
 

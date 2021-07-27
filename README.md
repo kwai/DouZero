@@ -19,21 +19,33 @@ DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedi
 
 **Community:**
 *  **Slack**: Discuss in [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) channel.
-*  **QQ Group**: Join our QQ-group 819204202. If it is full, you may join QQ-group-2 954183174. Password: douzeroqqgroup
+*  **QQ Group**: Join our QQ group to discuss. Password: douzeroqqgroup
+
+	*  Group 1: 819204202
+	*  group 2: 954183174
 
 <img width="500" src="https://douzero.org/public/demo.gif" alt="Demo" />
 
 ## Cite this Work
-For now, please cite our Arxiv version:
+If you find this project helpful in your research, please cite our paper:
 
-Zha, Daochen, et al. "DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning." arXiv preprint arXiv:2106.06135 (2021).
+Zha, Daochen et al. “DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning.” ICML (2021).
 
 ```bibtex
-@article{zha2021douzero,
-  title={DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning},
-  author={Zha, Daochen and Xie, Jingru and Ma, Wenye and Zhang, Sheng and Lian, Xiangru and Hu, Xia and Liu, Ji},
-  journal={arXiv preprint arXiv:2106.06135},
-  year={2021}
+@InProceedings{pmlr-v139-zha21a,
+  title = 	 {DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning},
+  author =       {Zha, Daochen and Xie, Jingru and Ma, Wenye and Zhang, Sheng and Lian, Xiangru and Hu, Xia and Liu, Ji},
+  booktitle = 	 {Proceedings of the 38th International Conference on Machine Learning},
+  pages = 	 {12333--12344},
+  year = 	 {2021},
+  editor = 	 {Meila, Marina and Zhang, Tong},
+  volume = 	 {139},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {18--24 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v139/zha21a/zha21a.pdf},
+  url = 	 {http://proceedings.mlr.press/v139/zha21a.html},
+  abstract = 	 {Games are abstractions of the real world, where artificial agents learn to compete and cooperate with other agents. While significant achievements have been made in various perfect- and imperfect-information games, DouDizhu (a.k.a. Fighting the Landlord), a three-player card game, is still unsolved. DouDizhu is a very challenging domain with competition, collaboration, imperfect information, large state space, and particularly a massive set of possible actions where the legal actions vary significantly from turn to turn. Unfortunately, modern reinforcement learning algorithms mainly focus on simple and small action spaces, and not surprisingly, are shown not to make satisfactory progress in DouDizhu. In this work, we propose a conceptually simple yet effective DouDizhu AI system, namely DouZero, which enhances traditional Monte-Carlo methods with deep neural networks, action encoding, and parallel actors. Starting from scratch in a single server with four GPUs, DouZero outperformed all the existing DouDizhu AI programs in days of training and was ranked the first in the Botzone leaderboard among 344 AI agents. Through building DouZero, we show that classic Monte-Carlo methods can be made to deliver strong results in a hard domain with a complex action space. The code and an online demo are released at https://github.com/kwai/DouZero with the hope that this insight could motivate future work.}
 }
 ```
 

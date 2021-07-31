@@ -87,13 +87,13 @@ python3 train.py
 ```
 This will train DouZero on one GPU. To train DouZero on multiple GPUs. Use the following arguments.
 *   `--gpu_devices`: what gpu devices are visible
-*   `--num_actors_devices`: how many of the GPU deveices will be used for simulation, i.e., self-play
+*   `--num_actor_devices`: how many of the GPU deveices will be used for simulation, i.e., self-play
 *   `--num_actors`: how many actor processes will be used for each device
 *   `--training_device`: which device will be used for training DouZero
 
 For example, if we have 4 GPUs, where we want to use the first 3 GPUs to have 15 actors each for simulating and the 4th GPU for training, we can run the following command:
 ```
-python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
+python3 train.py --gpu_devices 0,1,2,3 --num_actor_devices 3 --num_actors 15 --training_device 3
 ```
 For more customized configuration of training, see the following optional arguments:
 ```

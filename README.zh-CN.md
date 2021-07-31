@@ -86,13 +86,13 @@ python3 train.py
 ```
 这会使用一块GPU训练DouZero。如果需要用多个GPU训练Douzero，使用以下参数：
 *   `--gpu_devices`: 用作训练的GPU设备名
-*   `--num_actors_devices`: 被用来进行模拟（如自我对弈）的GPU数量
+*   `--num_actor_devices`: 被用来进行模拟（如自我对弈）的GPU数量
 *   `--num_actors`: 每个设备的演员进程数
 *   `--training_device`: 用来进行模型训练的设备
 
 例如，如果我们拥有4块GPU，我们想用前3个GPU进行模拟，每个GPU拥有15个演员，而使用第四个GPU进行训练，我们可以运行以下命令：
 ```
-python3 train.py --gpu_devices 0,1,2,3 --num_actors_devices 3 --num_actors 15 --training_device 3
+python3 train.py --gpu_devices 0,1,2,3 --num_actor_devices 3 --num_actors 15 --training_device 3
 ```
 其他定制化的训练配置可以参考以下可选项：
 ```

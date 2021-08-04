@@ -91,9 +91,11 @@ class Model:
     """
     def __init__(self, device=0):
         self.models = {}
-        self.models['landlord'] = LandlordLstmModel().to(torch.device('cuda:'+str(device)))
-        self.models['landlord_up'] = FarmerLstmModel().to(torch.device('cuda:'+str(device)))
-        self.models['landlord_down'] = FarmerLstmModel().to(torch.device('cuda:'+str(device)))
+        if not device == "cpu":
+            device = 'cuda:' + str(device)
+        self.models['landlord'] = LandlordLstmModel().to(torch.device(device))
+        self.models['landlord_up'] = FarmerLstmModel().to(torch.device(device))
+        self.models['landlord_down'] = FarmerLstmModel().to(torch.device(device))
 
     def forward(self, position, z, x, training=False, flags=None):
         model = self.models[position]

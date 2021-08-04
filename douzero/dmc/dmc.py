@@ -75,8 +75,14 @@ def train(flags):
     # Initialize actor models
     models = []
     assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
-    for device in range(flags.num_actor_devices):
-        model = Model(device=device)
+    if not flags.cpu:
+        for device in range(flags.num_actor_devices):
+            model = Model(device=device)
+            model.share_memory()
+            model.eval()
+            models.append(model)
+    else:
+        model = Model(device="cpu")
         model.share_memory()
         model.eval()
         models.append(model)
@@ -118,17 +124,28 @@ def train(flags):
         checkpoint_states = torch.load(
                 checkpointpath, map_location="cuda:"+str(flags.training_device)
         )
+        checkpoint_states_cpu = None
+        if flags.cpu:
+            checkpoint_states_cpu = torch.load(
+                checkpointpath, map_location="cpu"
+            )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
             learner_model.get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
             optimizers[k].load_state_dict(checkpoint_states["optimizer_state_dict"][k])
-            for device in range(flags.num_actor_devices):
-                models[device].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
+            if not flags.cpu:
+                for device in range(flags.num_actor_devices):
+                    models[device].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
+            else:
+                for device in range(flags.num_actor_devices):
+                    models[device].get_model(k).load_state_dict(checkpoint_states_cpu["model_state_dict"][k])
         stats = checkpoint_states["stats"]
         frames = checkpoint_states["frames"]
         position_frames = checkpoint_states["position_frames"]
         log.info(f"Resuming preempted job, current stats:\n{stats}")
 
     # Starting actor processes
+    if flags.cpu:
+        flags.num_actor_devices = 1
     for device in range(flags.num_actor_devices):
         num_actors = flags.num_actors
         for i in range(flags.num_actors):

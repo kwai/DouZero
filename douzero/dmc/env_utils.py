@@ -12,7 +12,9 @@ def _format_observation(obs, device):
     move them to CUDA.
     """
     position = obs['position']
-    device = torch.device('cuda:'+str(device))
+    if not device == "cpu":
+        device = 'cuda:' + str(device)
+    device = torch.device(device)
     x_batch = torch.from_numpy(obs['x_batch']).to(device)
     z_batch = torch.from_numpy(obs['z_batch']).to(device)
     x_no_action = torch.from_numpy(obs['x_no_action'])

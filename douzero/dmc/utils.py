@@ -83,7 +83,7 @@ def create_buffers(flags):
     T = flags.unroll_length
     positions = ['landlord', 'landlord_up', 'landlord_down']
     buffers = []
-    if not flags.cpu:
+    if not flags.actor_device_cpu:
         for device in range(torch.cuda.device_count()):
             buffers.append({})
             for position in positions:
@@ -136,7 +136,7 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
 
         env = create_env(flags)
 
-        if flags.cpu:
+        if flags.actor_device_cpu:
             device = "cpu"
         env = Environment(env, device)
 

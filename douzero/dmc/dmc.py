@@ -27,7 +27,10 @@ def learn(position,
           flags,
           lock):
     """Performs a learning (optimization) step."""
-    device = torch.device('cuda:'+str(flags.training_device)) 
+    if flags.training_device != "cpu":
+        device = torch.device('cuda:'+str(flags.training_device))
+    else:
+        device = torch.device('cpu')
     obs_x_no_action = batch['obs_x_no_action'].to(device)
     obs_action = batch['obs_action'].to(device)
     obs_x = torch.cat((obs_x_no_action, obs_action), dim=2).float()
@@ -75,7 +78,7 @@ def train(flags):
     # Initialize actor models
     models = []
     assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
-    if not flags.cpu:
+    if not flags.actor_device_cpu:
         for device in range(flags.num_actor_devices):
             model = Model(device=device)
             model.share_memory()
@@ -122,17 +125,20 @@ def train(flags):
     # Load models if any
     if flags.load_model and os.path.exists(checkpointpath):
         checkpoint_states = torch.load(
-                checkpointpath, map_location="cuda:"+str(flags.training_device)
+            checkpointpath, map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
         )
         checkpoint_states_cpu = None
-        if flags.cpu:
+        if flags.actor_device_cpu:
             checkpoint_states_cpu = torch.load(
                 checkpointpath, map_location="cpu"
             )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
-            learner_model.get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
+            if flags.training_device != "cpu":
+                learner_model.get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
+            else:
+                learner_model.get_model(k).load_state_dict(checkpoint_states_cpu["model_state_dict"][k])
             optimizers[k].load_state_dict(checkpoint_states["optimizer_state_dict"][k])
-            if not flags.cpu:
+            if not flags.actor_device_cpu:
                 for device in range(flags.num_actor_devices):
                     models[device].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
             else:
@@ -144,7 +150,7 @@ def train(flags):
         log.info(f"Resuming preempted job, current stats:\n{stats}")
 
     # Starting actor processes
-    if flags.cpu:
+    if flags.actor_device_cpu:
         flags.num_actor_devices = 1
     for device in range(flags.num_actor_devices):
         num_actors = flags.num_actors
@@ -210,6 +216,7 @@ def train(flags):
                 '%s/%s/%s' % (flags.savedir, flags.xpid, position+'_weights_'+str(frames)+'.ckpt')))
             torch.save(learner_model.get_model(position).state_dict(), model_weights_dir)
 
+    fps_log = []
     timer = timeit.default_timer
     try:
         last_checkpoint_time = timer() - flags.save_interval * 60
@@ -225,17 +232,25 @@ def train(flags):
 
             end_time = timer()
             fps = (frames - start_frames) / (end_time - start_time)
+            fps_avg = 0
+            fps_log.append(fps)
+            if len(fps_log) > 24:
+                fps_log = fps_log[1:]
+            for fps_record in fps_log:
+                fps_avg += fps_record
+            fps_avg = fps_avg / len(fps_log)
             position_fps = {k:(position_frames[k]-position_start_frames[k])/(end_time-start_time) for k in position_frames}
-            log.info('After %i (L:%i U:%i D:%i) frames: @ %.1f fps (L:%.1f U:%.1f D:%.1f) Stats:\n%s',
-                         frames,
-                         position_frames['landlord'],
-                         position_frames['landlord_up'],
-                         position_frames['landlord_down'],
-                         fps,
-                         position_fps['landlord'],
-                         position_fps['landlord_up'],
-                         position_fps['landlord_down'],
-                         pprint.pformat(stats))
+            log.info('After %i (L:%i U:%i D:%i) frames: @ %.1f fps (avg@ %.1f fps) (L:%.1f U:%.1f D:%.1f) Stats:\n%s',
+                     frames,
+                     position_frames['landlord'],
+                     position_frames['landlord_up'],
+                     position_frames['landlord_down'],
+                     fps,
+                     fps_avg,
+                     position_fps['landlord'],
+                     position_fps['landlord_up'],
+                     position_fps['landlord_down'],
+                     pprint.pformat(stats))
 
     except KeyboardInterrupt:
         return 

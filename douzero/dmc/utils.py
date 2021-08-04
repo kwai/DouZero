@@ -103,7 +103,7 @@ def create_buffers(flags):
                         _buffers[key].append(_buffer)
                 buffers[device][position] = _buffers
     else:
-        for device in range(torch.cuda.device_count()):
+        for device in range(1):
             buffers.append({})
             for position in positions:
                 x_dim = 319 if position == 'landlord' else 430

@@ -77,8 +77,8 @@ def train(flags):
 
     # Initialize actor models
     models = []
-    assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
     if not flags.actor_device_cpu:
+        assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
         for device in range(flags.num_actor_devices):
             model = Model(device=device)
             model.share_memory()

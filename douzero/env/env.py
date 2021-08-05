@@ -24,7 +24,7 @@ class Env:
     """
     def __init__(self, objective):
         """
-        Objective is wp/adp. It indicates whether considers
+        Objective is wp/adp/logadp. It indicates whether considers
         bomb in reward calculation. Here, we use dummy agents.
         This is because, in the orignial game, the players
         are `in` the game. Here, we want to isolate
@@ -105,11 +105,15 @@ class Env:
         if winner == 'landlord':
             if self.objective == 'adp':
                 return 2.0 ** bomb_num
+            elif self.objective == 'logadp':
+                return bomb_num + 1.0
             else:
                 return 1.0
         else:
             if self.objective == 'adp':
                 return -2.0 ** bomb_num
+            elif self.objective == 'logadp':
+                return -bomb_num - 1.0
             else:
                 return -1.0
 

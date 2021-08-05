@@ -24,6 +24,9 @@ DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedi
 	*  Group 1: 819204202
 	*  Group 2: 954183174
 
+**News:**
+*   Thanks for the contribution of [@Vincentzyx](https://github.com/Vincentzyx) for enabling CPU training. Now Windows users can train with CPUs.
+
 <img width="500" src="https://douzero.org/public/demo.gif" alt="Demo" />
 
 ## Cite this Work
@@ -193,6 +196,7 @@ You may encounter `operation not supported` error if you use a Windows system to
 ## Core Team
 *   Algorithm: [Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)
 *   GUI Demo: [Songyi Huang](https://github.com/hsywhu)
+*   Community contributors: [@Vincentzyx](https://github.com/Vincentzyx)
 
 ## Acknowlegements
 *   The demo is largely based on [RLCard-Showdown](https://github.com/datamllab/rlcard-showdown)

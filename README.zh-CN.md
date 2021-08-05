@@ -22,6 +22,9 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 	*  一群：819204202
 	*  二群：954183174
 
+**最新动态:**
+*   感谢[@Vincentzyx](https://github.com/Vincentzyx)实现了CPU训练。现在Windows用户也能用CPU训练了。
+
 <img width="500" src="https://douzero.org/public/demo.gif" alt="Demo" />
 
 ## 引用
@@ -192,6 +195,7 @@ sh get_most_recent.sh douzero_checkpoints/douzero/
 ## 核心团队
 *   算法：[Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)
 *   GUI演示：[Songyi Huang](https://github.com/hsywhu)
+*   社区贡献者: [@Vincentzyx](https://github.com/Vincentzyx)
 
 ## 鸣谢
 *   本演示基于[RLCard-Showdown](https://github.com/datamllab/rlcard-showdown)项目

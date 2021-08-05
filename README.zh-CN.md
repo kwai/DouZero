@@ -77,7 +77,7 @@ pip3 install douzero -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 pip3 install -e .
 ```
-我们不建议用Windows系统进行训练或评估。Windows系统可能会遇到些问题，详见[Windows下的问题](README.zh-CN.md#Windows下的问题)。但Windows用户仍可以[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。如果您发现解决方法，请联系我们！
+注意，Windows用户只能用CPU来模拟。关于为什么GPU会出问题，详见[Windows下的问题](README.zh-CN.md#Windows下的问题)。但Windows用户仍可以[在本地运行演示](https://github.com/datamllab/rlcard-showdown)。
 
 ## 训练
 假定您至少拥有一块可用的GPU，运行
@@ -94,12 +94,26 @@ python3 train.py
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actor_devices 3 --num_actors 15 --training_device 3
 ```
+如果用CPU进行训练和模拟（Windows用户只能用CPU进行模拟），用以下参数：
+*   `--training_device cpu`: 用CPU来训练
+*   `--actor_device_cpu`: 用CPU来模拟
+
+例如，用以下命令完全在CPU上运行：
+```
+python3 train.py --actor_device_cpu --training_device cpu
+```
+以下命令仅仅用CPU来跑模拟：
+```
+python3 train.py --actor_device_cpu
+```
+
 其他定制化的训练配置可以参考以下可选项：
 ```
 --xpid XPID           实验id（默认值：douzero）
 --save_interval SAVE_INTERVAL
                       保存模型的时间间隔（以分钟为单位）
 --objective {adp,wp}  使用ADP或者WP作为奖励（默认值：ADP）
+--actor_device_cpu    用CPU进行模拟
 --gpu_devices GPU_DEVICES
                       用作训练的GPU设备名
 --num_actor_devices NUM_ACTOR_DEVICES
@@ -107,7 +121,7 @@ python3 train.py --gpu_devices 0,1,2,3 --num_actor_devices 3 --num_actors 15 --t
 --num_actors NUM_ACTORS
                       每个设备的演员进程数
 --training_device TRAINING_DEVICE
-                      用来进行模型训练的设备
+                      用来进行模型训练的设备。`cpu`表示用CPU训练
 --load_model          读取已有的模型
 --disable_checkpoint  禁用保存检查点
 --savedir SAVEDIR     实验数据存储跟路径
@@ -173,7 +187,7 @@ sh get_most_recent.sh douzero_checkpoints/douzero/
 之后您可以在`most_recent_model`路径下找到最近一次保存的模型。
 
 ## Windows下的问题
-如果您使用的是Windows系统，您将可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。在评估中跑多进程也可能遇到问题。因此我们推荐使用Linux服务器或者macOS系统进行模型训练或评估。
+如果您使用的是Windows系统并用GPU进行模拟，您将可能遇到`operation not supported`错误。这是由于Windows系统不支持CUDA tensor上的多进程。但是，由于我们的代码是对GPU进行优化，有对CUDA tensor的大量操作。如果您有解决方案，请联系我们！
 
 ## 核心团队
 *   算法：[Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)

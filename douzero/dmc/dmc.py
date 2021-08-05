@@ -4,6 +4,7 @@ import time
 import timeit
 import pprint
 from collections import deque
+import numpy as np
 
 import torch
 from torch import multiprocessing as mp
@@ -53,7 +54,7 @@ def learn(position,
         nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
         optimizer.step()
 
-        for actor_model in actor_models:
+        for actor_model in actor_models.values():
             actor_model.get_model(position).load_state_dict(model.state_dict())
         return stats
 
@@ -64,6 +65,9 @@ def train(flags):
     Then it will start subprocesses as actors. Then, it will call
     learning function with  multiple threads.
     """
+    if not flags.actor_device_cpu or flags.training_device != 'cpu':
+        if not torch.cuda.is_available():
+            raise AssertionError("CUDA not available. If you have GPUs, please specify the ID after `--gpu_devices`. Otherwise, please train with CPU with `python3 train.py --actor_device_cpu --training_device cpu`")
     plogger = FileWriter(
         xpid=flags.xpid,
         xp_args=flags.__dict__,
@@ -75,34 +79,34 @@ def train(flags):
     T = flags.unroll_length
     B = flags.batch_size
 
-    # Initialize actor models
-    models = []
-    if not flags.actor_device_cpu:
-        assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
-        for device in range(flags.num_actor_devices):
-            model = Model(device=device)
-            model.share_memory()
-            model.eval()
-            models.append(model)
+    if flags.actor_device_cpu:
+        device_iterator = ['cpu']
     else:
-        model = Model(device="cpu")
+        device_iterator = range(flags.num_actor_devices)
+        assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
+
+    # Initialize actor models
+    models = {}
+    for device in device_iterator:
+        model = Model(device=device)
         model.share_memory()
         model.eval()
-        models.append(model)
+        models[device] = model
 
     # Initialize buffers
-    buffers = create_buffers(flags)
+    buffers = create_buffers(flags, device_iterator)
    
     # Initialize queues
     actor_processes = []
     ctx = mp.get_context('spawn')
-    free_queue = []
-    full_queue = []
-    for device in range(flags.num_actor_devices):
+    free_queue = {}
+    full_queue = {}
+        
+    for device in device_iterator:
         _free_queue = {'landlord': ctx.SimpleQueue(), 'landlord_up': ctx.SimpleQueue(), 'landlord_down': ctx.SimpleQueue()}
         _full_queue = {'landlord': ctx.SimpleQueue(), 'landlord_up': ctx.SimpleQueue(), 'landlord_down': ctx.SimpleQueue()}
-        free_queue.append(_free_queue)
-        full_queue.append(_full_queue)
+        free_queue[device] = _free_queue
+        full_queue[device] = _full_queue
 
     # Learner model for training
     learner_model = Model(device=flags.training_device)
@@ -127,32 +131,18 @@ def train(flags):
         checkpoint_states = torch.load(
             checkpointpath, map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
         )
-        checkpoint_states_cpu = None
-        if flags.actor_device_cpu:
-            checkpoint_states_cpu = torch.load(
-                checkpointpath, map_location="cpu"
-            )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
-            if flags.training_device != "cpu":
-                learner_model.get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
-            else:
-                learner_model.get_model(k).load_state_dict(checkpoint_states_cpu["model_state_dict"][k])
+            learner_model.get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
             optimizers[k].load_state_dict(checkpoint_states["optimizer_state_dict"][k])
-            if not flags.actor_device_cpu:
-                for device in range(flags.num_actor_devices):
-                    models[device].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
-            else:
-                for device in range(flags.num_actor_devices):
-                    models[device].get_model(k).load_state_dict(checkpoint_states_cpu["model_state_dict"][k])
+            for device in device_iterator:
+                models[device].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
         stats = checkpoint_states["stats"]
         frames = checkpoint_states["frames"]
         position_frames = checkpoint_states["position_frames"]
         log.info(f"Resuming preempted job, current stats:\n{stats}")
 
     # Starting actor processes
-    if flags.actor_device_cpu:
-        flags.num_actor_devices = 1
-    for device in range(flags.num_actor_devices):
+    for device in device_iterator:
         num_actors = flags.num_actors
         for i in range(flags.num_actors):
             actor = ctx.Process(
@@ -178,17 +168,19 @@ def train(flags):
                 frames += T * B
                 position_frames[position] += T * B
 
-    for device in range(flags.num_actor_devices):
+    for device in device_iterator:
         for m in range(flags.num_buffers):
             free_queue[device]['landlord'].put(m)
             free_queue[device]['landlord_up'].put(m)
             free_queue[device]['landlord_down'].put(m)
 
     threads = []
-    locks = [{'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()} for _ in range(flags.num_actor_devices)]
+    locks = {}
+    for device in device_iterator:
+        locks[device] = {'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()}
     position_locks = {'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()}
 
-    for device in range(flags.num_actor_devices):
+    for device in device_iterator:
         for i in range(flags.num_threads):
             for position in ['landlord', 'landlord_up', 'landlord_down']:
                 thread = threading.Thread(
@@ -229,16 +221,14 @@ def train(flags):
             if timer() - last_checkpoint_time > flags.save_interval * 60:  
                 checkpoint(frames)
                 last_checkpoint_time = timer()
-
             end_time = timer()
+
             fps = (frames - start_frames) / (end_time - start_time)
-            fps_avg = 0
             fps_log.append(fps)
             if len(fps_log) > 24:
                 fps_log = fps_log[1:]
-            for fps_record in fps_log:
-                fps_avg += fps_record
-            fps_avg = fps_avg / len(fps_log)
+            fps_avg = np.mean(fps_log)
+
             position_fps = {k:(position_frames[k]-position_start_frames[k])/(end_time-start_time) for k in position_frames}
             log.info('After %i (L:%i U:%i D:%i) frames: @ %.1f fps (avg@ %.1f fps) (L:%.1f U:%.1f D:%.1f) Stats:\n%s',
                      frames,

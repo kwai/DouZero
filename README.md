@@ -78,10 +78,10 @@ or install the up-to-date version (it could be not stable) with
 ```
 pip3 install -e .
 ```
-If you want to train or evaluate DouZero, you are not recommended to use a Windows machine. While it is possible to use Windows, you may encounter some errors. See [Issues in Windows](README.md#issues-in-windows). Nonetheless, Windows users can still [run the demo locally](https://github.com/datamllab/rlcard-showdown).  
+Note that Windows users can only use CPU as actors. See [Issues in Windows](README.md#issues-in-windows) about why GPUs are not supported. Nonetheless, Windows users can still [run the demo locally](https://github.com/datamllab/rlcard-showdown).  
 
 ## Training
-We assume you have at least one GPU available. Run
+To use GPU for training, run
 ```
 python3 train.py
 ```
@@ -95,12 +95,25 @@ For example, if we have 4 GPUs, where we want to use the first 3 GPUs to have 15
 ```
 python3 train.py --gpu_devices 0,1,2,3 --num_actor_devices 3 --num_actors 15 --training_device 3
 ```
+To use CPU training or simulation (Windows can only use CPU for actors), use the following arguments:
+*   `--training_device cpu`: Use CPU to train the model
+*   `--actor_device_cpu`: Use CPU as actors
+
+For example, use the following command to run everything on CPU:
+```
+python3 train.py --actor_device_cpu --training_device cpu
+```
+The following command only runs actors on CPU:
+```
+python3 train.py --actor_device_cpu
+```
 For more customized configuration of training, see the following optional arguments:
 ```
 --xpid XPID           Experiment id (default: douzero)
 --save_interval SAVE_INTERVAL
                       Time interval (in minutes) at which to save the model
 --objective {adp,wp}  Use ADP or WP as reward (default: ADP)
+--actor_device_cpu    Use CPU as actor device
 --gpu_devices GPU_DEVICES
                       Which GPUs to be used for training
 --num_actor_devices NUM_ACTOR_DEVICES
@@ -108,7 +121,8 @@ For more customized configuration of training, see the following optional argume
 --num_actors NUM_ACTORS
                       The number of actors for each simulation device
 --training_device TRAINING_DEVICE
-                      The index of the GPU used for training models
+                      The index of the GPU used for training models. `cpu`
+                	  means using cpu
 --load_model          Load an existing model
 --disable_checkpoint  Disable saving checkpoint
 --savedir SAVEDIR     Root dir where experiment data will be saved
@@ -174,7 +188,7 @@ sh get_most_recent.sh douzero_checkpoints/douzero/
 The most recent model will be in `most_recent_model`.
 
 ## Issues in Windows
-You may encounter `operation not supported` error if you use a Windows system to train. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Similarly, you may fail to launch multiple processes when running the evaluation script. Thus, we recommend using a Linux server or macOS system to train or evaluate the models. Please contact us if you find any solutions!
+You may encounter `operation not supported` error if you use a Windows system to traini with GPU as actors. This is because doing multiprocessing on CUDA tensors is not supported in Windows. However, our code extensively operates on the CUDA tensors since the code is optimized for GPUs. Please contact us if you find any solutions!
 
 ## Core Team
 *   Algorithm: [Daochen Zha](https://github.com/daochenzha), [Jingru Xie](https://github.com/karoka), Wenye Ma, Sheng Zhang, [Xiangru Lian](https://xrlian.com/), Xia Hu, [Ji Liu](http://jiliu-ml.org/)

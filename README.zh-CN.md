@@ -21,6 +21,7 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 *  **QQ群**: 加入我们的QQ群讨论。密码: douzeroqqgroup
 	*  一群：819204202
 	*  二群：954183174
+	*  三群：834954839
 
 **最新动态:**
 *   感谢[@Vincentzyx](https://github.com/Vincentzyx)实现了CPU训练。现在Windows用户也能用CPU训练了。

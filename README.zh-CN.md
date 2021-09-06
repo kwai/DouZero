@@ -175,6 +175,8 @@ python3 evaluate.py
 *   `--landlord_up`: 扮演地主上家的智能体，可选值：random, rlcard或预训练模型的路径
 *   `--landlord_down`: 扮演地主下家的智能体，可选值：random, rlcard或预训练模型的路径
 *   `--eval_data`: 包含评估数据的pickle文件
+*   `--num_workers`: 用多少个进程进行模拟
+*   `--gpu_device`: 用哪个GPU设备进行模拟。默认用CPU
 
 例如，可以通过以下命令评估DouZero-ADP智能体作为地主对阵随机智能体
 ```

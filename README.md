@@ -176,6 +176,8 @@ Some important hyperparameters are as follows.
 *   `--landlord_up`: which agent will play as LandlordUp (the one plays before the Landlord), which can be random, rlcard, or the path of the pre-trained model
 *   `--landlord_down`: which agent will play as LandlordDown (the one plays after the Landlord), which can be random, rlcard, or the path of the pre-trained model
 *   `--eval_data`: the pickle file that contains evaluation data
+*   `--num_workers`: how many subprocesses will be used
+*   `--gpu_device`: which GPU to use. It will use CPU by default
 
 For example, the following command evaluates DouZero-ADP in Landlord position against random agents
 ```

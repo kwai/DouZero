@@ -155,7 +155,7 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
                     break
 
             for p in positions:
-                if size[p] > T: 
+                while size[p] > T: 
                     index = free_queue[p].get()
                     if index is None:
                         break

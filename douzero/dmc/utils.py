@@ -139,8 +139,8 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
                 action = obs['legal_actions'][_action_idx]
                 obs_action_buf[position].append(_cards2tensor(action))
-                position, obs, env_output = env.step(action)
                 size[position] += 1
+                position, obs, env_output = env.step(action)
                 if env_output['done']:
                     for p in positions:
                         diff = size[p] - len(target_buf[p])

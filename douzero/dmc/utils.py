@@ -11,6 +11,7 @@ from torch import multiprocessing as mp
 
 from .env_utils import Environment
 from douzero.env import Env
+from douzero.env.env import _cards2array
 
 Card2Column = {3: 0, 4: 1, 5: 2, 6: 3, 7: 4, 8: 5, 9: 6, 10: 7,
                11: 8, 12: 9, 13: 10, 14: 11, 17: 12}
@@ -189,19 +190,6 @@ def _cards2tensor(list_cards):
     representation
     See Figure 2 in https://arxiv.org/pdf/2106.06135.pdf
     """
-    if len(list_cards) == 0:
-        return torch.zeros(54, dtype=torch.int8)
-
-    matrix = np.zeros([4, 13], dtype=np.int8)
-    jokers = np.zeros(2, dtype=np.int8)
-    counter = Counter(list_cards)
-    for card, num_times in counter.items():
-        if card < 20:
-            matrix[:, Card2Column[card]] = NumOnes2Array[num_times]
-        elif card == 20:
-            jokers[0] = 1
-        elif card == 30:
-            jokers[1] = 1
-    matrix = np.concatenate((matrix.flatten('F'), jokers))
+    matrix = _cards2array(list_cards)
     matrix = torch.from_numpy(matrix)
     return matrix

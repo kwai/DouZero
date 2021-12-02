@@ -13,6 +13,9 @@ def load_card_play_models(card_play_model_path_dict):
         elif card_play_model_path_dict[position] == 'random':
             from .random_agent import RandomAgent
             players[position] = RandomAgent()
+        elif card_play_model_path_dict[position] == 'expectimax':
+            from .expectimax_agent import ExpectimaxAgent
+            players[position] = ExpectimaxAgent()
         else:
             from .deep_agent import DeepAgent
             players[position] = DeepAgent(position, card_play_model_path_dict[position])

@@ -44,10 +44,15 @@ class RLCardAgent(object):
             last_pid = infoset.last_pid
 
             action = None
-            # the rule of leading round
+            # The rule of leading round
+            # RULE: This gets all of the combinations of cards in the players hand.
+            # Then, it chooses the action which contains your hands lowest card.add()
+            # If two hands contain the lowest card, it prioritzes the one with the
+            # most cards, ie a straight over a single.
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 chosen_action = None
                 comb = combine_cards(hand_cards)
+                # print('Comb: %s' % combhttps://github.com/kwai/DouZero/blob/main/douzero/evaluation/rlcard_agent.py)
                 min_card = hand_cards[0]
                 for _, acs in comb.items():
                     for ac in acs:
@@ -56,12 +61,18 @@ class RLCardAgent(object):
                             action = [char for char in chosen_action]
                             for i, c in enumerate(action):
                                 action[i] = RealCard2EnvCard[c]
-                            #print('lead action:', action)
-            # the rule of following cards
+                            # print('position: %s lead action: %s' % (infoset.player_position, action))
+            # The rule of following cards
+            # Rule: 
             else:
                 the_type = CARD_TYPE[0][last_move][0][0]
+                # this is a tuple of type (pair, straight etc) and its rank of that type
+                # print('Card Type Object: %s' % (CARD_TYPE[0][last_move][0]))
                 chosen_action = ''
                 rank = 1000
+
+                # choose the legal action with the lowest rank ie play your pair of 5's over your
+                # pair of aces
                 for ac in infoset.legal_actions:
                     _ac = ac.copy()
                     for i, c in enumerate(_ac):
@@ -71,11 +82,15 @@ class RLCardAgent(object):
                         if int(CARD_TYPE[0][_ac][0][1]) < rank:
                             rank = int(CARD_TYPE[0][_ac][0][1])
                             chosen_action = _ac
+
+                # if ther is an action, format it as an array
                 if chosen_action != '':
                     action = [char for char in chosen_action]
                     for i, c in enumerate(action):
                         action[i] = RealCard2EnvCard[c]
                     #print('action:', action)
+
+                # else pass
                 elif last_pid != 'landlord' and self.position != 'landlord':
                     action = []
 
@@ -104,11 +119,14 @@ def list2card_str(hand_list):
     return card_str
 
 def pick_chain(hand_list, count):
+    # print('handlist: %s' % hand_list)
     chains = []
     str_card = [card for card in INDEX]
     hand_list = [str(card) for card in hand_list]
     hand = ''.join(hand_list[:12])
     chain_list = hand.split('0')
+    # print('strcard: %s' % (str_card))
+    # print('chainlist: %s, hand: %s, handlist: %s' % (chain_list, hand, hand_list))
     add = 0
     for index, chain in enumerate(chain_list):
         if len(chain) > 0:
@@ -124,6 +142,8 @@ def pick_chain(hand_list, count):
                         chains.append(str_chain)
             add += len(chain)
     hand_list = [int(card) for card in hand_list]
+    if len(chains) > 0 and count > 1:
+        print('chains: %s' % (chains))
     return (chains, hand_list)
 
 def combine_cards(hand):

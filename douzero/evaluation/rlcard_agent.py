@@ -53,17 +53,11 @@ class RLCardAgent(object):
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 chosen_action = None
                 comb = self.combine_cards(hand_cards)
-                # print('Comb: %s' % combhttps://github.com/kwai/DouZero/blob/main/douzero/evaluation/rlcard_agent.py)
                 min_card = hand_cards[0]
                 for _, acs in comb.items():
                     for ac in acs:
                         if min_card in ac:
                             action = getActionArr(ac)
-                            # chosen_action = ac
-                            # action = [char for char in chosen_action]
-                            # for i, c in enumerate(action):
-                            #     action[i] = RealCard2EnvCard[c]
-                            # print('position: %s lead action: %s' % (infoset.player_position, action))
             # The rule of following cards
             # Rule:
             else:
@@ -144,10 +138,10 @@ class RLCardAgent(object):
         comb['trio_chain'] = only_trio_chain
         # 4. pick solo chain
         hand_list = card_str2list(hand)
-        chains, hand_list = pick_chain_v2(hand_list, 1)
+        chains, hand_list = pick_chain(hand_list, 1)
         comb['solo_chain'] = chains
         # 5. pick par_chain
-        chains, hand_list = pick_chain_v2(hand_list, 2)
+        chains, hand_list = pick_chain(hand_list, 2)
         comb['pair_chain'] = chains
         hand = list2card_str(hand_list)
         # 6. pick pair and solo
@@ -222,23 +216,31 @@ class RLCardAgentV2(RLCardAgent):
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 chosen_action = None
                 comb = self.combine_cards(hand_cards)
-                # print('Comb: %s' % combhttps://github.com/kwai/DouZero/blob/main/douzero/evaluation/rlcard_agent.py)
-                min_card = hand_cards[0]
 
+                chain_action = ([], None)
                 for _, acs in comb.items():
-
                     for ac in acs:
                         the_type = CARD_TYPE[0][ac][0][0]
                         if 'solo_chain' in the_type:
-                            result = getActionArr(ac)
-                            # if len(result) > 8:
-                            action = result
+                            action = getActionArr(ac)
+                            if chain_action[1] == None:
+                                chain_action = (action, 'solo_chain')
                         elif 'pair_chain' in the_type:
                             action = getActionArr(ac)
+                            if chain_action[1] != 'trio_chain':
+                                chain_action = (action, 'pair_chain')
                         elif 'trio_chain' in the_type:
                             action = getActionArr(ac)
-                            #print('trio chain action: %s' % (action))
-                        elif min_card in ac:
+                            return action
+                
+                if len(chain_action[0]) > 0:
+                    return chain_action[0]
+
+                min_card = hand_cards[0]
+
+                for _, acs in comb.items():
+                    for ac in acs:
+                        if min_card in ac:
                             action = getActionArr(ac)
             # The rule of following cards
             # Rule:

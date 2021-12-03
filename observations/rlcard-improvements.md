@@ -1,5 +1,5 @@
 #### Baselines: for running rl card agents against itself
-Command: python evaluate.py --landlord rlcard --landlord_up rlcard --landlord_down rlcard
+```python evaluate.py --landlord rlcard --landlord_up rlcard --landlord_down rlcard```
 
 Attempt 1
 WP results:
@@ -20,7 +20,7 @@ landlord : Farmers - -0.1776 : 0.1776
 ---
 
 #### Agent that prioritizes chains (Note: pair chains is broken for these observations)
-Command: python evaluate.py --landlord rlcardV2 --landlord_up rlcard --landlord_down rlcard
+```python evaluate.py --landlord rlcardV2 --landlord_up rlcard --landlord_down rlcard```
 
 Attempt 1
 WP results:
@@ -44,43 +44,46 @@ landlord : Farmers - -0.108 : 0.108
 ---
 
 #### Agent that prioritizes chains from combos and picks pair_chains that are non-disruptive of large straights.
-Note: this is playing against the implementation that has broken picker for pair chains (requiring 5 pairs in a row).
-Attempt 1
-WP results:
-landlord : Farmers - 0.4961 : 0.5039
-ADP results:
-landlord : Farmers - 0.0268 : -0.0268
+##### Note: this is playing against the implementation that has broken picker for pair chains (requiring 5 pairs in a row).
 
-Attempt 2
-WP results:
-landlord : Farmers - 0.4907 : 0.5093
-ADP results:
-landlord : Farmers - -0.022 : 0.022
-
-Attempt 3
-WP results:
-landlord : Farmers - 0.4951 : 0.5049
-ADP results:
-landlord : Farmers - 0.0092 : -0.0092
-
-
-#### Agent that prioritizes chains from combos and picks pair_chains that are non-disruptive of large straights.
-Playing against working picker for pair chains.
+```python evaluate.py --landlord rlcardV2 --landlord_up rlcard --landlord_down rlcard```
 
 Attempt 1
 WP results:
-landlord : Farmers - 0.4889 : 0.5111
+landlord : Farmers - 0.5564 : 0.4436
 ADP results:
-landlord : Farmers - -0.0312 : 0.0312
+landlord : Farmers - 0.2678 : -0.2678
 
 Attempt 2
 WP results:
-landlord : Farmers - 0.4893 : 0.5107
+landlord : Farmers - 0.5556 : 0.4444
 ADP results:
-landlord : Farmers - -0.0284 : 0.0284
+landlord : Farmers - 0.2936 : -0.2936
 
 Attempt 3
 WP results:
-landlord : Farmers - 0.4881 : 0.5119
+landlord : Farmers - 0.5551 : 0.4449
 ADP results:
-landlord : Farmers - -0.0442 : 0.0442
+landlord : Farmers - 0.2836 : -0.2836
+
+##### Playing against working picker for pair chains.
+
+```python evaluate.py --landlord rlcardV2 --landlord_up rlcard --landlord_down rlcard```
+
+Attempt 1
+WP results:
+landlord : Farmers - 0.5505 : 0.4495
+ADP results:
+landlord : Farmers - 0.2276 : -0.2276
+
+Attempt 2
+WP results:
+landlord : Farmers - 0.5482 : 0.4518
+ADP results:
+landlord : Farmers - 0.2132 : -0.2132
+
+Attempt 3
+WP results:
+landlord : Farmers - 0.5515 : 0.4485
+ADP results:
+landlord : Farmers - 0.2524 : -0.2524

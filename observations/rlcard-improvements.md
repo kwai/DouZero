@@ -87,3 +87,8 @@ WP results:
 landlord : Farmers - 0.5515 : 0.4485
 ADP results:
 landlord : Farmers - 0.2524 : -0.2524
+
+
+## Next steps
+Try prioritizing low sets of trios
+Try adding kickers to triples.

@@ -1,5 +1,4 @@
 import random
-import copy
 from rlcard.games.doudizhu.utils import CARD_TYPE
 
 EnvCard2RealCard = {3: '3', 4: '4', 5: '5', 6: '6', 7: '7',
@@ -12,7 +11,6 @@ RealCard2EnvCard = {'3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
 INDEX = {'3': 0, '4': 1, '5': 2, '6': 3, '7': 4,
          '8': 5, '9': 6, 'T': 7, 'J': 8, 'Q': 9,
          'K': 10, 'A': 11, '2': 12, 'B': 13, 'R': 14}
-
 
 class RLCardAgent(object):
 
@@ -101,6 +99,8 @@ class RLCardAgent(object):
 
         return action
 
+    # Made combine cards a method in class because it is basically a heuristic for definining what 
+    # the players optimal hand is. We have defined this optimal hand differently in V2.
     def combine_cards(self, hand):
         '''Get optimal combinations of cards in hand
         '''
@@ -137,11 +137,13 @@ class RLCardAgent(object):
         comb['trio'] = only_trio
         comb['trio_chain'] = only_trio_chain
         # 4. pick solo chain
+        # Note: Updated pick chain to pick chains of pairs that are 3 long and trios that are 2 long.
+        # This is what pick chain v2 accomplishes. weupdated this in thier implmentation because it is a bug.
         hand_list = card_str2list(hand)
-        chains, hand_list = pick_chain(hand_list, 1)
+        chains, hand_list = pick_chain_v2(hand_list, 1)
         comb['solo_chain'] = chains
         # 5. pick par_chain
-        chains, hand_list = pick_chain(hand_list, 2)
+        chains, hand_list = pick_chain_v2(hand_list, 2)
         comb['pair_chain'] = chains
         hand = list2card_str(hand_list)
         # 6. pick pair and solo
@@ -157,26 +159,9 @@ class RLCardAgent(object):
             comb['solo'].append(hand[index])
         return comb
 
-# Baselines:
-# 1
-# WP results:
-# landlord : Farmers - 0.4621 : 0.5379
-# ADP results:
-# landlord : Farmers - -0.1604 : 0.1604
-# 2
-# landlord : Farmers - 0.4569 : 0.5431
-# ADP results:
-# landlord : Farmers - -0.2156 : 0.2156
-# 3
-# WP results:
-# landlord : Farmers - 0.4616 : 0.5384
-# ADP results:
-# landlord : Farmers - -0.1776 : 0.1776
-
 # Improvements over first agent:
 #   1. Prioritze hard to play combinations ie long chains of singles and chains of pairs and triples.
-#   2. Play highest rank cards if you have two combos left and if they are likely be the highest
-#      rank of that type and let your other lower rank card get played fresh.
+#   2. Priorizes picking pair chains over solo chains if it results in removing more cards from the hand.
 class RLCardAgentV2(RLCardAgent):
     def __init__(self, position):
         self.name = 'RLCardV2'
@@ -209,14 +194,12 @@ class RLCardAgentV2(RLCardAgent):
             action = None
 
             # The rule of leading round
-            # RULE: This gets all of the combinations of cards in the players hand.
-            # Then, it chooses the action which contains your hands lowest card.add()
-            # If two hands contain the lowest card, it prioritzes the one with the
-            # most cards, ie a straight over a single.
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 chosen_action = None
                 comb = self.combine_cards(hand_cards)
 
+                # If there is a chain in the hand, play that chain as your leading move.
+                # Play pair chains before solo chains and trio chains before all.
                 chain_action = ([], None)
                 for _, acs in comb.items():
                     for ac in acs:
@@ -236,24 +219,22 @@ class RLCardAgentV2(RLCardAgent):
                 if len(chain_action[0]) > 0:
                     return chain_action[0]
 
+                # If there isn't a chain in the hand, play your combo with your min card in it.
                 min_card = hand_cards[0]
-
                 for _, acs in comb.items():
                     for ac in acs:
                         if min_card in ac:
                             action = getActionArr(ac)
             # The rule of following cards
-            # Rule:
+            # Rule: choose the legal action with the lowest rank ie play your pair of 5's over your
+            # pair of aces.
             else:
                 the_type = CARD_TYPE[0][last_move][0][0]
-                # print('type: %s', the_type )
                 # this is a tuple of type (pair, straight etc) and its rank of that type
-                # print('Card Type Object: %s' % (CARD_TYPE[0][last_move][0]))
                 chosen_action = ''
                 rank = 1000
 
-                # choose the legal action with the lowest rank ie play your pair of 5's over your
-                # pair of aces
+                # logic for choosing legal action with lowest rank
                 for ac in infoset.legal_actions:
                     _ac = ac.copy()
                     for i, c in enumerate(_ac):
@@ -286,8 +267,8 @@ class RLCardAgentV2(RLCardAgent):
 
         return action
 
-    # Pick pair chains which result in removing more cards from hand than by playing the solo straight
-    # surrounding it
+    # Pick pair chains which results in removing more cards from hand than by playing the solo straight
+    # surrounding it.
     def pick_non_disruptive_pair_chains(self, hand_list):
         solo_chains, solo_handlist = pick_chain_v2(hand_list, 1)
         pair_chains, pair_handlist = pick_chain_v2(hand_list, 2)
@@ -297,10 +278,10 @@ class RLCardAgentV2(RLCardAgent):
         
         # Return original handlist if there are no good pair chains to pick
         return ([], hand_list)
-        
+    
+    # Difference from V1: Priorizes picking pair chains over solo chains if it 
+    # results in removing more cards from the hand.
     def combine_cards(self, hand):
-        # print('Starting Hand: %s' % (card_str2list(hand)))
-        # print(hand)
         '''Get optimal combinations of cards in hand
         '''
         comb = {'rocket': [], 'bomb': [], 'trio': [], 'trio_chain': [],
@@ -338,11 +319,12 @@ class RLCardAgentV2(RLCardAgent):
     
         hand_list = card_str2list(hand)
 
-        # 5. Pick Non Disruptive Pair Chains
+        # The following two combos are the change from V1.
+        # 4. Pick Non Disruptive Pair Chains
         chains, hand_list = self.pick_non_disruptive_pair_chains(hand_list)
         comb['pair_chain'] = chains
 
-        # 4. pick solo chain
+        # 5. Pick solo chains
         chains, hand_list = pick_chain_v2(hand_list, 1)
         comb['solo_chain'] = chains
 
@@ -362,14 +344,17 @@ class RLCardAgentV2(RLCardAgent):
             comb['solo'].append(hand[index])
         return comb
 
-
+# Helper for getting the action arr
+# param ac: string of cards ex. 789TJ
+# returns result arr which is arr of card indexs ex. [7, 8, 9, 10, 11]
 def getActionArr(ac):
+    print(ac)
     chosen_action = ac
     result = [char for char in chosen_action]
     for i, c in enumerate(result):
         result[i] = RealCard2EnvCard[c]
+    print(result)
     return result
-
 
 def card_str2list(hand):
     hand_list = [0 for _ in range(15)]
@@ -422,6 +407,8 @@ def pick_chain_v2(hand_list, count):
 
     formatted_hand = hand
 
+    # based on count, turn all cards that break chain to 0 so we can split up chains.lower()
+    # example, one Jack breaks a pair chain for 2 10's, 1 J and 2 Q's.
     if count == 2:
         formatted_hand = hand.replace('1', '0')
     elif count == 3:
@@ -434,12 +421,14 @@ def pick_chain_v2(hand_list, count):
     add = 0
     for index, chain in enumerate(chain_list):
         if len(chain) > 0:
+            # pair chain needs to be 3 long, trio needs to be 2 long
             if len(chain) >= (5 / count):
                 start = index + add
                 min_count = int(min(chain)) // count
                 if min_count != 0:
                     str_chain = ''
                     for num in range(len(chain)):
+                        # push 2 jacks to result if pair chain
                         str_chain += (str_card[start+num] * count)
                         hand_list[start +
                                   num] = int(hand_list[start+num]) - int(min(chain))

@@ -1,5 +1,5 @@
 import random
-
+import copy
 from rlcard.games.doudizhu.utils import CARD_TYPE
 
 EnvCard2RealCard = {3: '3', 4: '4', 5: '5', 6: '6', 7: '7',
@@ -52,16 +52,17 @@ class RLCardAgent(object):
             # most cards, ie a straight over a single.
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 chosen_action = None
-                comb = combine_cards(hand_cards)
+                comb = self.combine_cards(hand_cards)
                 # print('Comb: %s' % combhttps://github.com/kwai/DouZero/blob/main/douzero/evaluation/rlcard_agent.py)
                 min_card = hand_cards[0]
                 for _, acs in comb.items():
                     for ac in acs:
                         if min_card in ac:
-                            chosen_action = ac
-                            action = [char for char in chosen_action]
-                            for i, c in enumerate(action):
-                                action[i] = RealCard2EnvCard[c]
+                            action = getActionArr(ac)
+                            # chosen_action = ac
+                            # action = [char for char in chosen_action]
+                            # for i, c in enumerate(action):
+                            #     action[i] = RealCard2EnvCard[c]
                             # print('position: %s lead action: %s' % (infoset.player_position, action))
             # The rule of following cards
             # Rule:
@@ -105,6 +106,62 @@ class RLCardAgent(object):
         assert action in infoset.legal_actions
 
         return action
+
+    def combine_cards(self, hand):
+        '''Get optimal combinations of cards in hand
+        '''
+        comb = {'rocket': [], 'bomb': [], 'trio': [], 'trio_chain': [],
+                'solo_chain': [], 'pair_chain': [], 'pair': [], 'solo': []}
+        # 1. pick rocket
+        if hand[-2:] == 'BR':
+            comb['rocket'].append('BR')
+            hand = hand[:-2]
+        # 2. pick bomb
+        hand_cp = hand
+        for index in range(len(hand_cp) - 3):
+            if hand_cp[index] == hand_cp[index+3]:
+                bomb = hand_cp[index: index+4]
+                comb['bomb'].append(bomb)
+                hand = hand.replace(bomb, '')
+        # 3. pick trio and trio_chain
+        hand_cp = hand
+        for index in range(len(hand_cp) - 2):
+            if hand_cp[index] == hand_cp[index+2]:
+                trio = hand_cp[index: index+3]
+                if len(comb['trio']) > 0 and INDEX[trio[-1]] < 12 and (INDEX[trio[-1]]-1) == INDEX[comb['trio'][-1][-1]]:
+                    comb['trio'][-1] += trio
+                else:
+                    comb['trio'].append(trio)
+                hand = hand.replace(trio, '')
+        only_trio = []
+        only_trio_chain = []
+        for trio in comb['trio']:
+            if len(trio) == 3:
+                only_trio.append(trio)
+            else:
+                only_trio_chain.append(trio)
+        comb['trio'] = only_trio
+        comb['trio_chain'] = only_trio_chain
+        # 4. pick solo chain
+        hand_list = card_str2list(hand)
+        chains, hand_list = pick_chain_v2(hand_list, 1)
+        comb['solo_chain'] = chains
+        # 5. pick par_chain
+        chains, hand_list = pick_chain_v2(hand_list, 2)
+        comb['pair_chain'] = chains
+        hand = list2card_str(hand_list)
+        # 6. pick pair and solo
+        index = 0
+        while index < len(hand) - 1:
+            if hand[index] == hand[index+1]:
+                comb['pair'].append(hand[index] + hand[index+1])
+                index += 2
+            else:
+                comb['solo'].append(hand[index])
+                index += 1
+        if index == (len(hand) - 1):
+            comb['solo'].append(hand[index])
+        return comb
 
 # Baselines:
 # 1
@@ -164,7 +221,7 @@ class RLCardAgentV2(RLCardAgent):
             # most cards, ie a straight over a single.
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 chosen_action = None
-                comb = combine_cards(hand_cards)
+                comb = self.combine_cards(hand_cards)
                 # print('Comb: %s' % combhttps://github.com/kwai/DouZero/blob/main/douzero/evaluation/rlcard_agent.py)
                 min_card = hand_cards[0]
 
@@ -178,14 +235,11 @@ class RLCardAgentV2(RLCardAgent):
                             action = result
                         elif 'pair_chain' in the_type:
                             action = getActionArr(ac)
-                            print('pair chain action: %s' % (action))
                         elif 'trio_chain' in the_type:
                             action = getActionArr(ac)
                             #print('trio chain action: %s' % (action))
                         elif min_card in ac:
                             action = getActionArr(ac)
-
-                            # print('position: %s lead action: %s' % (infoset.player_position, action))
             # The rule of following cards
             # Rule:
             else:
@@ -230,6 +284,82 @@ class RLCardAgentV2(RLCardAgent):
 
         return action
 
+    # Pick pair chains which result in removing more cards from hand than by playing the solo straight
+    # surrounding it
+    def pick_non_disruptive_pair_chains(self, hand_list):
+        solo_chains, solo_handlist = pick_chain_v2(hand_list, 1)
+        pair_chains, pair_handlist = pick_chain_v2(hand_list, 2)
+
+        if sum(pair_handlist) < sum(solo_handlist):
+            return (pair_chains, pair_handlist)
+        
+        # Return original handlist if there are no good pair chains to pick
+        return ([], hand_list)
+        
+    def combine_cards(self, hand):
+        # print('Starting Hand: %s' % (card_str2list(hand)))
+        # print(hand)
+        '''Get optimal combinations of cards in hand
+        '''
+        comb = {'rocket': [], 'bomb': [], 'trio': [], 'trio_chain': [],
+                'solo_chain': [], 'pair_chain': [], 'pair': [], 'solo': []}
+        # 1. pick rocket
+        if hand[-2:] == 'BR':
+            comb['rocket'].append('BR')
+            hand = hand[:-2]
+        # 2. pick bomb
+        hand_cp = hand
+        for index in range(len(hand_cp) - 3):
+            if hand_cp[index] == hand_cp[index+3]:
+                bomb = hand_cp[index: index+4]
+                comb['bomb'].append(bomb)
+                hand = hand.replace(bomb, '')
+        # 3. pick trio and trio_chain
+        hand_cp = hand
+        for index in range(len(hand_cp) - 2):
+            if hand_cp[index] == hand_cp[index+2]:
+                trio = hand_cp[index: index+3]
+                if len(comb['trio']) > 0 and INDEX[trio[-1]] < 12 and (INDEX[trio[-1]]-1) == INDEX[comb['trio'][-1][-1]]:
+                    comb['trio'][-1] += trio
+                else:
+                    comb['trio'].append(trio)
+                hand = hand.replace(trio, '')
+        only_trio = []
+        only_trio_chain = []
+        for trio in comb['trio']:
+            if len(trio) == 3:
+                only_trio.append(trio)
+            else:
+                only_trio_chain.append(trio)
+        comb['trio'] = only_trio
+        comb['trio_chain'] = only_trio_chain
+    
+        hand_list = card_str2list(hand)
+
+        # 5. Pick Non Disruptive Pair Chains
+        chains, hand_list = self.pick_non_disruptive_pair_chains(hand_list)
+        comb['pair_chain'] = chains
+
+        # 4. pick solo chain
+        chains, hand_list = pick_chain_v2(hand_list, 1)
+        comb['solo_chain'] = chains
+
+        # update hand again with new hand list
+        hand = list2card_str(hand_list)
+
+        # 6. pick pair and solo
+        index = 0
+        while index < len(hand) - 1:
+            if hand[index] == hand[index+1]:
+                comb['pair'].append(hand[index] + hand[index+1])
+                index += 2
+            else:
+                comb['solo'].append(hand[index])
+                index += 1
+        if index == (len(hand) - 1):
+            comb['solo'].append(hand[index])
+        return comb
+
 
 def getActionArr(ac):
     chosen_action = ac
@@ -252,7 +382,6 @@ def list2card_str(hand_list):
     for index, count in enumerate(hand_list):
         card_str += cards[index] * count
     return card_str
-
 
 def pick_chain(hand_list, count):
     # print('handlist: %s' % hand_list)
@@ -283,59 +412,41 @@ def pick_chain(hand_list, count):
         print('chains: %s' % (chains))
     return (chains, hand_list)
 
+def pick_chain_v2(hand_list, count):
+    chains = []
+    str_card = [card for card in INDEX]
+    hand_list = [str(card) for card in hand_list]
+    hand = ''.join(hand_list[:12])
 
-def combine_cards(hand):
-    '''Get optimal combinations of cards in hand
-    '''
-    comb = {'rocket': [], 'bomb': [], 'trio': [], 'trio_chain': [],
-            'solo_chain': [], 'pair_chain': [], 'pair': [], 'solo': []}
-    # 1. pick rocket
-    if hand[-2:] == 'BR':
-        comb['rocket'].append('BR')
-        hand = hand[:-2]
-    # 2. pick bomb
-    hand_cp = hand
-    for index in range(len(hand_cp) - 3):
-        if hand_cp[index] == hand_cp[index+3]:
-            bomb = hand_cp[index: index+4]
-            comb['bomb'].append(bomb)
-            hand = hand.replace(bomb, '')
-    # 3. pick trio and trio_chain
-    hand_cp = hand
-    for index in range(len(hand_cp) - 2):
-        if hand_cp[index] == hand_cp[index+2]:
-            trio = hand_cp[index: index+3]
-            if len(comb['trio']) > 0 and INDEX[trio[-1]] < 12 and (INDEX[trio[-1]]-1) == INDEX[comb['trio'][-1][-1]]:
-                comb['trio'][-1] += trio
-            else:
-                comb['trio'].append(trio)
-            hand = hand.replace(trio, '')
-    only_trio = []
-    only_trio_chain = []
-    for trio in comb['trio']:
-        if len(trio) == 3:
-            only_trio.append(trio)
-        else:
-            only_trio_chain.append(trio)
-    comb['trio'] = only_trio
-    comb['trio_chain'] = only_trio_chain
-    # 4. pick solo chain
-    hand_list = card_str2list(hand)
-    chains, hand_list = pick_chain(hand_list, 1)
-    comb['solo_chain'] = chains
-    # 5. pick par_chain
-    chains, hand_list = pick_chain(hand_list, 2)
-    comb['pair_chain'] = chains
-    hand = list2card_str(hand_list)
-    # 6. pick pair and solo
-    index = 0
-    while index < len(hand) - 1:
-        if hand[index] == hand[index+1]:
-            comb['pair'].append(hand[index] + hand[index+1])
-            index += 2
-        else:
-            comb['solo'].append(hand[index])
-            index += 1
-    if index == (len(hand) - 1):
-        comb['solo'].append(hand[index])
-    return comb
+    formatted_hand = hand
+
+    if count == 2:
+        formatted_hand = hand.replace('1', '0')
+    elif count == 3:
+        formatted_hand = hand.replace('2', '0')
+    elif count == 4:
+        formatted_hand = hand.replace('4', '0')
+
+    chain_list = formatted_hand.split('0')
+    
+    add = 0
+    for index, chain in enumerate(chain_list):
+        if len(chain) > 0:
+            if len(chain) >= (5 / count):
+                start = index + add
+                min_count = int(min(chain)) // count
+                if min_count != 0:
+                    str_chain = ''
+                    for num in range(len(chain)):
+                        str_chain += (str_card[start+num] * count)
+                        hand_list[start +
+                                  num] = int(hand_list[start+num]) - int(min(chain))
+                    for _ in range(min_count):
+                        chains.append(str_chain)
+            add += len(chain)
+
+    hand_list = [int(card) for card in hand_list]
+    
+    return (chains, hand_list)
+
+

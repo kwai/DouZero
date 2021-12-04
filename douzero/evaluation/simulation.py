@@ -13,6 +13,9 @@ def load_card_play_models(card_play_model_path_dict):
         elif card_play_model_path_dict[position] == 'rlcardV2':
             from .rlcard_agent import RLCardAgentV2
             players[position] = RLCardAgentV2(position)
+        elif card_play_model_path_dict[position] == 'rlcardV3':
+            from .rlcard_agent import RLCardAgentV3
+            players[position] = RLCardAgentV3(position)
         elif card_play_model_path_dict[position] == 'random':
             from .random_agent import RandomAgent
             players[position] = RandomAgent()

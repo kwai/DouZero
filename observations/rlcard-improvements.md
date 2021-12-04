@@ -90,5 +90,5 @@ landlord : Farmers - 0.2524 : -0.2524
 
 
 ## Next steps
-Try prioritizing low sets of trios
 Try adding kickers to triples.
+Try prioritizing low sets of trios

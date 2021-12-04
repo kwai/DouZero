@@ -1,5 +1,7 @@
 from rlcard.games.doudizhu.utils import CARD_TYPE
 
+from douzero.dmc.utils import act
+
 EnvCard2RealCard = {3: '3', 4: '4', 5: '5', 6: '6', 7: '7',
                     8: '8', 9: '9', 10: 'T', 11: 'J', 12: 'Q',
                     13: 'K', 14: 'A', 17: '2', 20: 'B', 30: 'R'}
@@ -12,11 +14,12 @@ INDEX = {'3': 0, '4': 1, '5': 2, '6': 3, '7': 4,
          'K': 10, 'A': 11, '2': 12, 'B': 13, 'R': 14}
 
 def get_best_actions(hand_cards, last_move = None):
+    print(hand_cards)
     combinations = get_combinations(hand_cards)
     if last_move == None:
-        return get_best_leading_moves(combinations)
+        return get_best_leading_moves(hand_cards, combinations)
     else:
-        return get_best_following_moves(combinations, last_move)
+        return get_best_following_moves(hand_cards, combinations, last_move)
 
 # Get the best combinations from your hand.
 # TODO generate all chains, trios recursively and the solos / pairs that arise from that because
@@ -116,15 +119,29 @@ def getFirstAndLastArr(arr):
     return arr[::len(arr)-1]
 
 def convertActionListArr(arr):
-  return list(map(lambda acs: action_str2action_arr(acs), arr))
+  return list(map(lambda tuple: (action_str2action_arr(tuple[0]), tuple[1]), arr))
+
+def getNextHandTupleArr(hand, action_strs):
+  result = []
+  for acs in action_strs:
+    next_hand = hand
+    for c in acs:
+      next_hand = next_hand.replace(c, '')
+      result.append((acs, next_hand))
+
+  return result
+
+def formatResultTuple(hand, action_strs):
+  return convertActionListArr(getNextHandTupleArr(hand, action_strs))
 
 # Get a prioritzed array of all the best moves from your combinations
-def get_best_leading_moves(combinations):
+def get_best_leading_moves(hand, combinations):
   
   action_strs = combinations['trio_chain'] + combinations['pair_chain'] + combinations['solo_chain'] \
     + getFirstAndLastArr(combinations['trio_kickers']) + getFirstAndLastArr(combinations['pair']) \
       + getFirstAndLastArr(combinations['solo']) + combinations['bomb'] + combinations['rocket']
-  return convertActionListArr(action_strs)
+  
+  return formatResultTuple(hand, action_strs)
 
 TRIO_CHAIN = 'trio_chain'
 PAIR_CHAIN = 'pair_chain'
@@ -138,7 +155,7 @@ SOLO = 'solo'
 # the idea behind this is we don't want to break up our best hands, we would rather pass
 # Additionally, playing your highest ranked hands may be advantageous over lowest ranked to control
 # the board sometimes.
-def get_best_following_moves(combinations, last_move):
+def get_best_following_moves(hand, combinations, last_move):
   the_type, last_rank = CARD_TYPE[0][last_move][0]
   last_rank = int(last_rank)
   moves = []
@@ -186,7 +203,7 @@ def get_best_following_moves(combinations, last_move):
   moves = getFirstAndLastArr(moves)
 
   # convert to actions arrays and add pass as a valid move
-  return convertActionListArr(moves) + [[]]
+  return formatResultTuple(hand, moves) + [([], hand)]
 
 # Pick pair chains which results in removing more cards from hand than by playing the solo straight
 # surrounding it.

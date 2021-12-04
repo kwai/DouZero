@@ -156,6 +156,7 @@ class RLCardAgent(object):
                 index += 1
         if index == (len(hand) - 1):
             comb['solo'].append(hand[index])
+
         return comb
 
 # Improvements over first agent:
@@ -260,8 +261,8 @@ class RLCardAgentV2(RLCardAgent):
                 action = random.choice(infoset.legal_actions)
         except:
             action = random.choice(infoset.legal_actions)
-            # import traceback
-            # traceback.print_exc()
+            import traceback
+            traceback.print_exc()
 
         assert action in infoset.legal_actions
 
@@ -343,6 +344,35 @@ class RLCardAgentV2(RLCardAgent):
         if index == (len(hand) - 1):
             comb['solo'].append(hand[index])
 
+        # 7. Add lowest solo and pairs to trios
+        solosAndPairs = comb['solo'] + comb['pair']
+        # sort by rank
+        solosAndPairs.sort(key=lambda acs: int(CARD_TYPE[0][acs][0][1]), reverse=True)
+
+        # reverse both lists so we can pop the lowest rank off the back of the list
+        comb['pair'].reverse()
+        comb['solo'].reverse()
+
+        # add the lowest kickers to each each trio
+        for i in range(len(comb['trio'])):
+            if len(solosAndPairs) > 0:
+                el = solosAndPairs.pop()
+
+                # remove the kicker from the solo / pair list
+                if len(el) == 2:
+                    comb['pair'].pop()
+                else: 
+                    comb['solo'].pop()
+
+                # sort the trio so that the lower rank cards come first
+                new_acs = comb['trio'][i] + el
+                new_ac = action_str2action_arr(new_acs)
+                new_ac.sort()
+                comb['trio'][i] = action_arr2action_str(new_ac)
+            
+        # put the lists back in their normal order
+        comb['pair'].reverse()
+        comb['solo'].reverse()
         return comb
 
 
@@ -392,7 +422,7 @@ class RLCardAgentV3(RLCardAgentV2):
             # The rule of leading round
             if last_two_cards[0] == '' and last_two_cards[1] == '':
                 action = self.getOptimalLeadingAction(infoset)
-                print(action)
+                # print(action)
                 return action
 
             # The rule of following cards

@@ -88,6 +88,28 @@ landlord : Farmers - 0.5515 : 0.4485
 ADP results:
 landlord : Farmers - 0.2524 : -0.2524
 
+##### V2 with picking lowest kickers from solo and pairs for trios
+
+```python evaluate.py --landlord rlcardV2 --landlord_up rlcard --landlord_down rlcard```
+
+Attempt 1
+WP results:
+landlord : Farmers - 0.6388 : 0.3612
+ADP results:
+landlord : Farmers - 0.7798 : -0.7798
+
+Attempt 2
+WP results:
+landlord : Farmers - 0.638 : 0.362
+ADP results:
+landlord : Farmers - 0.7788 : -0.7788
+
+Attempt 3
+WP results:
+landlord : Farmers - 0.6328 : 0.3672
+ADP results:
+landlord : Farmers - 0.7398 : -0.7398
+
 
 ## Next steps
 Try adding kickers to triples.

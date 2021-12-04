@@ -1,5 +1,6 @@
 import random
 from rlcard.games.doudizhu.utils import CARD_TYPE
+from .util import get_best_actions
 
 EnvCard2RealCard = {3: '3', 4: '4', 5: '5', 6: '6', 7: '7',
                     8: '8', 9: '9', 10: 'T', 11: 'J', 12: 'Q',
@@ -49,6 +50,7 @@ class RLCardAgent(object):
             # If two hands contain the lowest card, it prioritzes the one with the
             # most cards, ie a straight over a single.
             if last_two_cards[0] == '' and last_two_cards[1] == '':
+                print(get_best_actions(hand_cards))
                 chosen_action = None
                 comb = self.combine_cards(hand_cards)
                 min_card = hand_cards[0]
@@ -59,6 +61,7 @@ class RLCardAgent(object):
             # The rule of following cards
             # Rule:
             else:
+                print(last_move, get_best_actions(hand_cards, last_move))
                 the_type = CARD_TYPE[0][last_move][0][0]
                 # this is a tuple of type (pair, straight etc) and its rank of that type
                 chosen_action = ''
@@ -90,8 +93,8 @@ class RLCardAgent(object):
                 action = random.choice(infoset.legal_actions)
         except:
             action = random.choice(infoset.legal_actions)
-            # import traceback
-            # traceback.print_exc()
+            import traceback
+            traceback.print_exc()
 
         assert action in infoset.legal_actions
 

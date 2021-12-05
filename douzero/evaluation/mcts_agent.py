@@ -6,6 +6,7 @@ from . import util
 
 MCTS_DATA_FILE_NAME = 'C:\\Users\\Genevieve\\Desktop\\NEU\\Fall_2021\\ai\\DouZero\\douzero\\evaluation\\mcts_agent_data.txt'  # TODO
 VERBOSE = True
+TREE_TARGET_DEPTH = 5
 
 
 def debug(*msgs):
@@ -80,35 +81,6 @@ class MctsAgent:
         else:
             return best_legal_moves[0] # MCTS implementation
 
-    def traverse_round_tree(self, infoset):
-        target_leaf_hand = None  # TODO
-
-        # while fully_expanded(node):
-        #     node = best_uct(node)
-        #
-        # # in case no children are present / node is terminal
-        # return pick_univisted(node.children) or node
-
-        return target_leaf_hand
-
-    def round_rollout_policy(self, legal_actions_from_hand):
-        return random.choice(legal_actions_from_hand)
-
-    def rollout_round(self, target_leaf_hand):
-        simulation_result = None  # TODO
-        #     while non_terminal(node):
-        #         node = rollout_policy(node)
-        #     return result(node)
-        return simulation_result
-
-    def backpropagate(self, target_leaf_hand, simulation_result):
-        # TODO update the mcts data??
-
-        #     if is_root(node) return
-        #     node.stats = update_stats(node, result)
-        #     backpropagate(node.parent)
-        return None  # TODO nothing to return
-
     # New state = our cards after playing the action, the opponents' cards after playing their next best action
     # The opponents right now choose the first action from the heuritic narrowed-down list
     def build_new_state(self, action, infoset):
@@ -138,13 +110,25 @@ class MctsAgent:
         node.state = state
         return node
 
+    def fill_node(self, root_node, depth):
+        if depth == 0:
+            return root_node
+
+        for child in root_node.children:
+
+            self.fill_node(self, child, depth - 1)
+
     def create_tree(self, infoset, best_action_tuple):
-        tree = Node()
+        global TREE_TARGET_DEPTH
+        root_node = Node()
         for action in best_action_tuple:
             action_move = action[0]
             child_node = self.build_new_state(action_move, infoset)
-            tree.children[tuple(action_move)] = child_node
-        return tree
+            root_node.children[tuple(action_move)] = child_node
+
+        self.fill_node(root_node, TREE_TARGET_DEPTH)
+
+        return root_node
 
     # TODO remove this eventually
     def handle_invalid_result(self, result, infoset):
@@ -187,25 +171,31 @@ class MctsAgent:
 
         return self.choose_best_action(tree, infoset)
 
-        #
-        # if len(curr_legal_actions) == 0:
-        #     debug("No actions to take with hand: ", curr_hand)
-        #     return None
-        #
-        # # Run the current number of iterations
-        # while num_iterations != 0:
-        #     target_leaf_hand = self.traverse_round_tree(infoset)
-        #     simulation_result = self.rollout_round(target_leaf_hand)
-        #     self.backpropagate(target_leaf_hand, simulation_result)
-        #     num_iterations -= 1
-        #
-        #
-        # return self.get_best_action(curr_hand, infoset)
-
-
-# Any time we make a move
-# our hand is the root
-# get ben's action list
-# from root, build tree of next opponent actions
-# from each next state, perform a playout
-# state = all hand cards, last 2 moves
+    # def traverse_round_tree(self, infoset):
+    #     target_leaf_hand = None  # TODO
+    #
+    #     # while fully_expanded(node):
+    #     #     node = best_uct(node)
+    #     #
+    #     # # in case no children are present / node is terminal
+    #     # return pick_univisted(node.children) or node
+    #
+    #     return target_leaf_hand
+    #
+    # def round_rollout_policy(self, legal_actions_from_hand):
+    #     return random.choice(legal_actions_from_hand)
+    #
+    # def rollout_round(self, target_leaf_hand):
+    #     simulation_result = None  # TODO
+    #     #     while non_terminal(node):
+    #     #         node = rollout_policy(node)
+    #     #     return result(node)
+    #     return simulation_result
+    #
+    # def backpropagate(self, target_leaf_hand, simulation_result):
+    #     # TODO update the mcts data??
+    #
+    #     #     if is_root(node) return
+    #     #     node.stats = update_stats(node, result)
+    #     #     backpropagate(node.parent)
+    #     return None  # TODO nothing to return

@@ -103,7 +103,8 @@ class GameEnv(object):
     def step(self):
         action = self.players[self.acting_player_position].act(
             self.game_infoset)
-        assert action in self.game_infoset.legal_actions
+        legal_actions = self.game_infoset.legal_actions
+        assert action in legal_actions
 
         if len(action) > 0:
             self.last_pid = self.acting_player_position

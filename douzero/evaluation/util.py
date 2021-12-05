@@ -131,6 +131,12 @@ def getNextHandTupleArr(hand, action_strs):
 
   return result
 
+def getNextHandTupleArrV2(hand, action_strs):
+  for action in action_strs:
+      hand = hand.replace(action, '')
+
+  return hand
+
 def formatResultTuple(hand, action_strs):
   return convertActionListArr(getNextHandTupleArr(hand, action_strs))
 
@@ -230,6 +236,11 @@ def list2card_str(hand_list):
         card_str += cards[index] * count
     return card_str
 
+def list2card_str_v2(hand_list):
+    card_str = ''
+    for card in hand_list:
+        card_str += EnvCard2RealCard[card]
+    return card_str
 
 def action_arr2action_str(ac):
     _ac = ac.copy()

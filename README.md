@@ -16,7 +16,7 @@ DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedi
 *   Related Project: [RLCard Project](https://github.com/datamllab/rlcard)
 *   Related Resources: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 *   Google Colab: [jupyter notebook](https://github.com/daochenzha/douzero-colab/blob/main/douzero-colab.ipynb)
-*   An unofficial improved version of DouZero by the community: [DouZero FullAuto](https://github.com/Vincentzyx/DouZero_For_HLDDZ_FullAuto)
+*   Unofficial improved versions of DouZero by the community: [[DouZero ResNet]](https://github.com/Vincentzyx/Douzero_Resnet) [[DouZero FullAuto]](https://github.com/Vincentzyx/DouZero_For_HLDDZ_FullAuto)
 
 **Community:**
 *  **Slack**: Discuss in [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) channel.

@@ -1,8 +1,11 @@
 # [ICML 2021] DouZero: Mastering DouDizhu with Self-Play Deep Reinforcement Learning
 <img width="500" src="https://raw.githubusercontent.com/kwai/DouZero/main/imgs/douzero_logo.jpg" alt="Logo" />
 
+[![Building](https://github.com/kwai/DouZero/actions/workflows/python-package.yml/badge.svg)](https://github.com/kwai/DouZero/actions/workflows/python-package.yml)
+[![PyPI version](https://badge.fury.io/py/douzero.svg)](https://badge.fury.io/py/douzero)
 [![Downloads](https://pepy.tech/badge/douzero)](https://pepy.tech/project/douzero)
 [![Downloads](https://pepy.tech/badge/douzero/month)](https://pepy.tech/project/douzero)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/daochenzha/douzero-colab/blob/main/douzero-colab.ipynb)
 
 [中文文档](README.zh-CN.md)

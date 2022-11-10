@@ -64,8 +64,7 @@ def get_move_type(move):
                 (count_dict.get(2) == 1 or count_dict.get(1) == 2):
             return {'type': TYPE_13_4_2, 'rank': move[2]}
 
-    if move_size == 8 and (((len(move_dict) == 3 or len(move_dict) == 2) and
-            (count_dict.get(4) == 1 and count_dict.get(2) == 2)) or count_dict.get(4) == 2):
+    if move_size == 8 and (len(move_dict) == 3 and (count_dict.get(4) == 1 and count_dict.get(2) == 2)):
         return {'type': TYPE_14_4_22, 'rank': max([c for c, n in move_dict.items() if n == 4])}
 
     mdkeys = sorted(move_dict.keys())

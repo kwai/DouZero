@@ -80,9 +80,9 @@ class FarmerLstmModel(nn.Module):
 
 # Model dict is only used in evaluation but not training
 model_dict = {}
-model_dict['landlord'] = LandlordLstmModel
-model_dict['landlord_up'] = FarmerLstmModel
-model_dict['landlord_down'] = FarmerLstmModel
+model_dict['landlord'] = GeneralModel
+model_dict['landlord_up'] = GeneralModel
+model_dict['landlord_down'] = GeneralModel
 
 class Model:
     """
@@ -93,9 +93,9 @@ class Model:
         self.models = {}
         if not device == "cpu":
             device = 'cuda:' + str(device)
-        self.models['landlord'] = LandlordLstmModel().to(torch.device(device))
-        self.models['landlord_up'] = FarmerLstmModel().to(torch.device(device))
-        self.models['landlord_down'] = FarmerLstmModel().to(torch.device(device))
+        self.models['landlord'] = GeneralModel().to(torch.device(device))
+        self.models['landlord_up'] = GeneralModel().to(torch.device(device))
+        self.models['landlord_down'] = GeneralModel().to(torch.device(device))
 
     def forward(self, position, z, x, training=False, flags=None):
         model = self.models[position]
@@ -120,7 +120,7 @@ class Model:
     def get_models(self):
         return self.models
 
-///Added
+# Added from https://github.com/Vincentzyx/Douzero_Resnet/blob/main/douzero/dmc/models.py
 
 # 用于ResNet18和34的残差块，用的是2个3x3的卷积
 class BasicBlock(nn.Module):

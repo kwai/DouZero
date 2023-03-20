@@ -20,6 +20,7 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
 *   相关资源: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 *   由社区贡献者开发的非官方改进版: [[DouZero ResNet]](https://github.com/Vincentzyx/Douzero_Resnet) [[DouZero FullAuto]](https://github.com/Vincentzyx/DouZero_For_HLDDZ_FullAuto)
 *   知乎：[https://zhuanlan.zhihu.com/p/526723604](https://zhuanlan.zhihu.com/p/526723604)
+*   杂项资源：您听说过以数据为中心的人工智能吗？请查看我们的 [data-centric AI survey](https://arxiv.org/abs/2303.10158) 和 [awesome data-centric AI resources](https://github.com/daochenzha/data-centric-AI)!
 
 **社区:**
 *  **Slack**: 加入 [DouZero](https://join.slack.com/t/douzero/shared_invite/zt-rg3rygcw-ouxxDk5o4O0bPZ23vpdwxA) 频道.

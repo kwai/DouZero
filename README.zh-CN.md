@@ -16,6 +16,8 @@ DouZero是一个为斗地主设计的强化学习框架。斗地主十分具有�
       * :loudspeaker: 抢先体验叫牌版本（调试中）: [https://www.douzero.org/bid](https://www.douzero.org/bid)
 *   离线运行演示: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
 *   论文: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
+*   视频: [YouTube](https://www.youtube.com/watch?v=inHIi8sej7Y)
+*   论文: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
 *   相关仓库: [RLCard Project](https://github.com/datamllab/rlcard)
 *   相关资源: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)
 *   由社区贡献者开发的非官方改进版: [[DouZero ResNet]](https://github.com/Vincentzyx/Douzero_Resnet) [[DouZero FullAuto]](https://github.com/Vincentzyx/DouZero_For_HLDDZ_FullAuto)

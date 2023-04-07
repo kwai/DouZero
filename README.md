@@ -15,7 +15,7 @@ DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedi
 *   Online Demo: [https://www.douzero.org/](https://www.douzero.org/)
        * :loudspeaker: New Version with Bid（叫牌版本）: [https://www.douzero.org/bid](https://www.douzero.org/bid)
 *   Run the Demo Locally: [https://github.com/datamllab/rlcard-showdown](https://github.com/datamllab/rlcard-showdown)
-*   Video: [YouTube](https://www.youtube.com/watch?v=inHIi8sej7Y)
+*   Video: [YouTube](https://youtu.be/inHIi8sej7Y)
 *   Paper: [https://arxiv.org/abs/2106.06135](https://arxiv.org/abs/2106.06135) 
 *   Related Project: [RLCard Project](https://github.com/datamllab/rlcard)
 *   Related Resources: [Awesome-Game-AI](https://github.com/datamllab/awesome-game-ai)

@@ -32,6 +32,7 @@ DouZero is a reinforcement learning framework for [DouDizhu](https://en.wikipedi
 	*  Group 2: 954183174
 	*  Group 3: 834954839
 	*  Group 4: 211434658
+	*  Group 5: 189203636
 
 **News:**
 *   Thanks for the contribution of [@Vincentzyx](https://github.com/Vincentzyx) for enabling CPU training. Now Windows users can train with CPUs.

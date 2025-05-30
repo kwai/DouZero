@@ -197,14 +197,14 @@ def get_obs(infoset):
 
     `position` is a string that can be landlord/landlord_down/landlord_up
 
-    `x_batch` is a batch of features (excluding the hisorical moves).
+    `x_batch` is a batch of features (excluding the historical moves).
     It also encodes the action feature
 
-    `z_batch` is a batch of features with hisorical moves only.
+    `z_batch` is a batch of features with historical moves only.
 
     `legal_actions` is the legal moves
 
-    `x_no_action`: the features (exluding the hitorical moves and
+    `x_no_action`: the features (exluding the historical moves and
     the action features). It does not have the batch dim.
 
     `z`: same as z_batch but not a batch.

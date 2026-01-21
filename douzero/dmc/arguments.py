@@ -27,6 +27,16 @@ parser.add_argument('--disable_checkpoint', action='store_true',
                     help='Disable saving checkpoint')
 parser.add_argument('--savedir', default='douzero_checkpoints',
                     help='Root dir where experiment data will be saved')
+parser.add_argument('--pretrained_dir', default='', type=str,
+                    help='Directory with landlord.ckpt/landlord_up.ckpt/landlord_down.ckpt')
+parser.add_argument('--pretrained_landlord', default='', type=str,
+                    help='Path to landlord .ckpt')
+parser.add_argument('--pretrained_landlord_up', default='', type=str,
+                    help='Path to landlord_up .ckpt')
+parser.add_argument('--pretrained_landlord_down', default='', type=str,
+                    help='Path to landlord_down .ckpt')
+parser.add_argument('--convert_only', action='store_true',
+                    help='Load pretrained ckpt(s), save model.tar, then exit')
 
 # Hyperparameters
 parser.add_argument('--total_frames', default=100000000000, type=int,

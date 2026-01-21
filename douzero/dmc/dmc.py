@@ -20,6 +20,33 @@ def compute_loss(logits, targets):
     loss = ((logits.squeeze(-1) - targets)**2).mean()
     return loss
 
+def _resolve_pretrained_paths(flags):
+    positions = ['landlord', 'landlord_up', 'landlord_down']
+    paths = {p: '' for p in positions}
+    if flags.pretrained_dir:
+        for p in positions:
+            paths[p] = os.path.join(flags.pretrained_dir, f'{p}.ckpt')
+    if flags.pretrained_landlord:
+        paths['landlord'] = flags.pretrained_landlord
+    if flags.pretrained_landlord_up:
+        paths['landlord_up'] = flags.pretrained_landlord_up
+    if flags.pretrained_landlord_down:
+        paths['landlord_down'] = flags.pretrained_landlord_down
+    if not any(paths.values()):
+        return None
+    for p, path in paths.items():
+        if not path or not os.path.exists(path):
+            raise FileNotFoundError(f'Missing pretrained ckpt for {p}: {path}')
+    return paths
+
+def _load_pretrained_into_learner(learner_model, paths, device):
+    for position, path in paths.items():
+        model_state_dict = learner_model.get_model(position).state_dict()
+        pretrained = torch.load(path, map_location=device)
+        pretrained = {k: v for k, v in pretrained.items() if k in model_state_dict}
+        model_state_dict.update(pretrained)
+        learner_model.get_model(position).load_state_dict(model_state_dict)
+
 def learn(position,
           actor_models,
           model,
@@ -126,6 +153,7 @@ def train(flags):
     frames, stats = 0, {k: 0 for k in stat_keys}
     position_frames = {'landlord':0, 'landlord_up':0, 'landlord_down':0}
 
+    loaded_pretrained = False
     # Load models if any
     if flags.load_model and os.path.exists(checkpointpath):
         checkpoint_states = torch.load(
@@ -139,7 +167,49 @@ def train(flags):
         stats = checkpoint_states["stats"]
         frames = checkpoint_states["frames"]
         position_frames = checkpoint_states["position_frames"]
+        loaded_pretrained = True
         log.info(f"Resuming preempted job, current stats:\n{stats}")
+    elif flags.load_model:
+        pretrained_paths = _resolve_pretrained_paths(flags)
+        if pretrained_paths:
+            device = ("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
+            _load_pretrained_into_learner(learner_model, pretrained_paths, device)
+            for device_id in device_iterator:
+                for k in ['landlord', 'landlord_up', 'landlord_down']:
+                    models[device_id].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
+            loaded_pretrained = True
+            log.info(f"Loaded pretrained ckpt(s): {pretrained_paths}")
+        else:
+            log.warning("load_model set but no model.tar found and no pretrained ckpt paths provided.")
+
+    def checkpoint(frames):
+        if flags.disable_checkpoint:
+            return
+        log.info('Saving checkpoint to %s', checkpointpath)
+        _models = learner_model.get_models()
+        torch.save({
+            'model_state_dict': {k: _models[k].state_dict() for k in _models},
+            'optimizer_state_dict': {k: optimizers[k].state_dict() for k in optimizers},
+            "stats": stats,
+            'flags': vars(flags),
+            'frames': frames,
+            'position_frames': position_frames
+        }, checkpointpath)
+
+        # Save the weights for evaluation purpose
+        for position in ['landlord', 'landlord_up', 'landlord_down']:
+            model_weights_dir = os.path.expandvars(os.path.expanduser(
+                '%s/%s/%s' % (flags.savedir, flags.xpid, position+'_weights_'+str(frames)+'.ckpt')))
+            torch.save(learner_model.get_model(position).state_dict(), model_weights_dir)
+
+    if flags.convert_only:
+        if not loaded_pretrained:
+            log.warning("convert_only requires a loaded model.tar or pretrained ckpt paths.")
+            plogger.close()
+            return
+        checkpoint(0)
+        plogger.close()
+        return
 
     # Starting actor processes
     for device in device_iterator:
@@ -187,26 +257,6 @@ def train(flags):
                     target=batch_and_learn, name='batch-and-learn-%d' % i, args=(i,device,position,locks[device][position],position_locks[position]))
                 thread.start()
                 threads.append(thread)
-    
-    def checkpoint(frames):
-        if flags.disable_checkpoint:
-            return
-        log.info('Saving checkpoint to %s', checkpointpath)
-        _models = learner_model.get_models()
-        torch.save({
-            'model_state_dict': {k: _models[k].state_dict() for k in _models},
-            'optimizer_state_dict': {k: optimizers[k].state_dict() for k in optimizers},
-            "stats": stats,
-            'flags': vars(flags),
-            'frames': frames,
-            'position_frames': position_frames
-        }, checkpointpath)
-
-        # Save the weights for evaluation purpose
-        for position in ['landlord', 'landlord_up', 'landlord_down']:
-            model_weights_dir = os.path.expandvars(os.path.expanduser(
-                '%s/%s/%s' % (flags.savedir, flags.xpid, position+'_weights_'+str(frames)+'.ckpt')))
-            torch.save(learner_model.get_model(position).state_dict(), model_weights_dir)
 
     fps_log = []
     timer = timeit.default_timer

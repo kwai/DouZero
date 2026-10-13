@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 class TemplateStore(private val load: (String) -> ByteArray?) {
     private val cache = ConcurrentHashMap<String, Mat>()
     private val grayCache = ConcurrentHashMap<String, Mat>()
+    private val scaledGrayCache = ConcurrentHashMap<String, Mat>()
     private val missing = ConcurrentHashMap.newKeySet<String>()
 
     operator fun get(name: String): Mat? {
@@ -41,6 +42,19 @@ class TemplateStore(private val load: (String) -> ByteArray?) {
         return g
     }
 
+    /** Grey template resized for clients that render cards at a different scale. */
+    fun grayScaled(name: String, scale: Double): Mat? {
+        if (kotlin.math.abs(scale - 1.0) < 0.01) return gray(name)
+        val key = "$name@${"%.2f".format(java.util.Locale.ROOT, scale)}"
+        scaledGrayCache[key]?.let { return it }
+        val source = gray(name) ?: return null
+        val out = Mat()
+        Imgproc.resize(source, out, org.opencv.core.Size(), scale, scale,
+            if (scale < 1) Imgproc.INTER_AREA else Imgproc.INTER_LINEAR)
+        scaledGrayCache[key] = out
+        return out
+    }
+
     /**
      * Drop cached images after templates were (re)captured. The old Mats are
      * left to the GC because the bot thread may still be matching with them.
@@ -49,10 +63,12 @@ class TemplateStore(private val load: (String) -> ByteArray?) {
         if (name == null) {
             cache.clear()
             grayCache.clear()
+            scaledGrayCache.clear()
             missing.clear()
         } else {
             cache.remove(name)
             grayCache.remove(name)
+            scaledGrayCache.keys.removeIf { it.startsWith("$name@") }
             missing.remove(name)
         }
     }

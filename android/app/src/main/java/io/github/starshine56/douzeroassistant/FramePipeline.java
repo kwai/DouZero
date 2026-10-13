@@ -1,14 +1,17 @@
 package io.github.starshine56.douzeroassistant;
 
-import android.graphics.Bitmap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Latest-frame-only conversion boundary. Processing is off the capture callback thread. */
+/** Latest-frame-only ImageReader RGBA -> OpenCV BGR conversion. */
 final class FramePipeline {
     private static final AtomicBoolean BUSY = new AtomicBoolean(false);
     private static final HandlerThread THREAD = new HandlerThread("card-recognition");
@@ -21,31 +24,25 @@ final class FramePipeline {
         if (image == null) return;
         if (!BUSY.compareAndSet(false, true)) { image.close(); return; }
         Image.Plane plane = image.getPlanes()[0];
-        int width = image.getWidth();
-        int height = image.getHeight();
-        int rowStride = plane.getRowStride();
-        int pixelStride = plane.getPixelStride();
-        if (pixelStride != 4) { image.close(); BUSY.set(false); return; }
-        ByteBuffer source = plane.getBuffer();
-        byte[] copy = new byte[source.remaining()];
-        source.get(copy);
+        int width = image.getWidth(), height = image.getHeight();
+        int rowStride = plane.getRowStride(), pixelStride = plane.getPixelStride();
+        if (pixelStride != 4 || rowStride < width * 4) { image.close(); BUSY.set(false); return; }
+        ByteBuffer source = plane.getBuffer(); source.rewind();
+        byte[] copy = new byte[rowStride * height];
+        source.get(copy, 0, Math.min(source.remaining(), copy.length));
         image.close();
         HANDLER.post(() -> {
-            Bitmap padded = null;
-            Bitmap cropped = null;
+            Mat padded = new Mat(height, rowStride / 4, CvType.CV_8UC4);
+            Mat rgba = null; Mat bgr = new Mat();
             try {
-                int paddedWidth = rowStride / pixelStride;
-                padded = Bitmap.createBitmap(paddedWidth, height, Bitmap.Config.ARGB_8888);
-                padded.copyPixelsFromBuffer(ByteBuffer.wrap(copy));
-                cropped = paddedWidth == width ? padded : Bitmap.createBitmap(padded, 0, 0, width, height);
-                if (cropped != padded) padded.recycle();
-                AssistantRuntime.process(cropped);
-                cropped = null; // runtime owns and recycles it
-            } catch (Throwable t) {
-                if (cropped != null) cropped.recycle();
-                if (padded != null && !padded.isRecycled()) padded.recycle();
+                padded.put(0, 0, copy);
+                rgba = padded.submat(new Rect(0, 0, width, height));
+                Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR);
+                AssistantRuntime.processBgr(bgr);
+            } catch (Throwable ignored) {
             } finally {
-                BUSY.set(false);
+                if (rgba != null) rgba.release();
+                padded.release(); bgr.release(); BUSY.set(false);
             }
         });
     }

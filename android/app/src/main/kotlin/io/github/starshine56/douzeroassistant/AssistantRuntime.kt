@@ -1,14 +1,11 @@
 package io.github.starshine56.douzeroassistant
 
 import android.content.Context
-import android.graphics.Bitmap
 import io.github.starshine56.douzero.core.Cards
 import io.github.starshine56.douzero.core.OrtModels
 import io.github.starshine56.douzero.core.Position
 import io.github.starshine56.douzero.vision.*
-import org.opencv.android.Utils
 import org.opencv.core.Mat
-import org.opencv.imgproc.Imgproc
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -29,18 +26,13 @@ object AssistantRuntime {
         else snapshot(status = "OpenCV 初始化失败", remaining = "识牌不可用"))
     }
 
-    /** Called by the latest-frame-only worker; ownership of [bitmap] is transferred here. */
-    @JvmStatic fun process(bitmap: Bitmap) {
-        val rgba = Mat(); val bgr = Mat()
+    /** Called with a BGR Mat converted directly from ImageReader RGBA bytes. */
+    @JvmStatic fun processBgr(bgr: Mat) {
         try {
-            Utils.bitmapToMat(bitmap, rgba)
-            Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR)
             synchronized(frameLock) { bgr.copyTo(latestBgr); hasFrame = true }
             ensureEngine()
         } catch (t: Throwable) {
             publish(snapshot(status = "画面处理错误：${t.javaClass.simpleName}", remaining = "已暂停推荐"))
-        } finally {
-            rgba.release(); bgr.release(); bitmap.recycle()
         }
     }
 

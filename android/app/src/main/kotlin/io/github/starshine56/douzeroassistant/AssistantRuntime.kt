@@ -58,8 +58,15 @@ object AssistantRuntime {
                     if (!hasFrame) false else { latestBgr.copyTo(dst); true }
                 } }
                 val noTap = Tapper { _, _ -> Unit }
-                val e = BotEngine(source, noTap, Vision(templates, Layout()), BotAi(ort.models), listener)
-                e.settings = BotSettings(autoPlay = false, continuous = true, clickPopups = false, showCards = false)
+                val layout = Layout(mapOf(
+                    // Measured from the supplied 2400x1080 independent-app screenshot after scaling to work height 810.
+                    Regions.LANDLORD_CARDS to RegionSpec(1015, 0, 190, 100, Anchor.LEFT),
+                    Regions.RIGHT_PLAYED to RegionSpec(900, 155, 520, 185, Anchor.LEFT),
+                    Regions.MY_HAND to RegionSpec(120, 480, 1450, 190, Anchor.LEFT),
+                ))
+                val e = BotEngine(source, noTap, Vision(templates, layout), BotAi(ort.models), listener)
+                e.settings = BotSettings(autoPlay = false, continuous = true, clickPopups = false,
+                    showCards = false, cardConfidence = 0.76)
                 engine = e
                 e.start()
             } catch (t: Throwable) {

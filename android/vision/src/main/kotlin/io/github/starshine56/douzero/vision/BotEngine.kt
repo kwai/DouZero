@@ -173,7 +173,14 @@ class BotEngine(
         return true
     }
 
-    private fun cards(set: Char, region: String) = vision.cards(set, region, conf)
+    private fun cards(set: Char, region: String): CardRow {
+        val threshold = when (set) {
+            'o' -> maxOf(conf, 0.80) // table cards are isolated and should stay strict
+            'z' -> minOf(conf, 0.68) // supplied independent-app bottom cards use a smaller font
+            else -> conf
+        }
+        return vision.cards(set, region, threshold)
+    }
 
     /** Port of detect_start_btn: notice the end of a game and handle pop-ups. */
     private fun checkMeta() {
@@ -296,7 +303,7 @@ class BotEngine(
         while (true) {
             grab()
             checkMeta()
-            val row = vision.landlordCards(conf)
+            val row = vision.landlordCards(minOf(conf, 0.68))
             if (row.size == 3) return row.env()
             hint("等待识别底牌：识别到 ${row.size} 张 ${row.sortedText()}")
             sleep(200)
@@ -354,7 +361,7 @@ class BotEngine(
                 jiabei = vision.locate("jiabei_btn", Regions.BUTTONS)
                 if (jiao != null || qiang != null || jiabei != null) break
                 // no doubling prompt for us although the landlord cards are open
-                if (vision.landlordCards(conf).size == 3) {
+                if (vision.landlordCards(minOf(conf, 0.68)).size == 3) {
                     if (now() - waitedSince > 8000) {
                         log("未出现加倍按钮，进入出牌阶段")
                         return

@@ -24,5 +24,8 @@
             android:name=".CaptureService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
+        <service
+            android:name=".OverlayService"
+            android:exported="false" />
     </application>
 </manifest>

@@ -1,4 +1,7 @@
-plugins { id("com.android.application") }
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
 
 android {
     namespace = "io.github.starshine56.douzeroassistant"
@@ -22,4 +25,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    packaging { resources.excludes += setOf("META-INF/*.kotlin_module", "META-INF/versions/**") }
+}
+
+dependencies {
+    implementation(project(":core"))
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
 }

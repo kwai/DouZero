@@ -1,0 +1,16 @@
+DouZero Android Assistant
+
+This product includes software developed by the DouZero project
+(https://github.com/kwai/DouZero), licensed under Apache License 2.0.
+
+The Android Kotlin rule engine, observation encoder, ONNX model adapter,
+and related parity tests are adapted from
+Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero
+(https://github.com/Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero),
+licensed under Apache License 2.0. Package names and product boundaries were
+changed; automatic clicking and accessibility automation are intentionally
+excluded from this derivative work.
+
+Other repositories without an explicit license and the user-supplied
+proprietary APK were used only as behavioral references. Their source code,
+model weights, artwork, server protocol, and endpoints are not included.

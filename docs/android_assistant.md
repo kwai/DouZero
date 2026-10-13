@@ -1,6 +1,6 @@
 # Android automatic-recognition assistant
 
-This branch adds a clean-room, local-first assistant around Apache-2.0 DouZero.
+This branch adds a local-first assistant around Apache-2.0 DouZero. The Kotlin rule engine, observation encoder, ONNX adapter and parity tests are adapted from the Apache-2.0 project `Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero`; see `NOTICE`.
 
 ## Product boundary
 
@@ -14,8 +14,8 @@ This branch adds a clean-room, local-first assistant around Apache-2.0 DouZero.
 
 1. `CaptureService` receives explicit system screen-sharing consent.
 2. `FramePipeline` keeps only the latest frame to avoid analyzing animations late.
-3. A clean-room NCNN detector will emit rank, confidence and normalized bounds.
-4. ROI routing separates hand, center play, left play, right play, bottom cards and remaining counters.
+3. The first recognition backend uses OpenCV rank-template matching; an optional NCNN detector can replace it after a licensed/locally-trained model is available.
+4. Resolution-independent ROI routing separates hand, center play, left play, right play, bottom cards and remaining counters. A first 2400×1080 profile was measured from the supplied screenshot.
 5. `MultiFrameStabilizer` requires repeated observations.
 6. `RoundState` enforces physical card counts and maintains unseen cards.
 7. The inference adapter converts a verified state to the existing DouZero environment.
@@ -24,10 +24,11 @@ This branch adds a clean-room, local-first assistant around Apache-2.0 DouZero.
 ## Reference policy
 
 - `kwai/DouZero`: source dependency under Apache-2.0; existing LICENSE retained.
+- `Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero`: Apache-2.0 Kotlin rules/encoder/ONNX adapter/parity tests, adapted with attribution and without its automatic-control layer.
 - Other public repositories without an explicit license and the supplied proprietary APK are behavior/architecture references only. Their source, model weights, artwork, protocol and server endpoints are not copied.
 
 ## Current status
 
-Implemented: card normalization, 54-card invariant, round observations, uncertainty gate, multi-frame voting, minimum-permission Android shell, MediaProjection foreground service, latest-frame backpressure, and CI.
+Implemented: card normalization, 54-card invariant, round observations, uncertainty gate, multi-frame voting, minimum-permission Android shell, MediaProjection foreground service, latest-frame backpressure, Kotlin legal-move engine, DouZero observation encoding, ONNX Runtime adapter, Top-3 decision logic, a draggable read-only overlay, a screenshot-specific ROI profile, parity/safety tests, and CI.
 
-Not yet implemented: trained detector weights, ROI calibration UI, native NCNN bridge, full legal-play validation, DouZero mobile model conversion, overlay recommendation UI, and on-device validation.
+Not yet implemented: bundled ONNX weights, OpenCV template assets for the supplied independent-app skin, live bitmap-to-ROI processing, calibration UI, wiring stable events into `GameState`, overlay live updates, and on-device validation. The present APK shell must not be described as a working automatic recognizer yet.

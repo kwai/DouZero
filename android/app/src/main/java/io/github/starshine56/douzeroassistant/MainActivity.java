@@ -43,6 +43,7 @@ public final class MainActivity extends Activity {
                     .putExtra(CaptureService.EXTRA_RESULT_CODE, resultCode)
                     .putExtra(CaptureService.EXTRA_RESULT_DATA, data);
             startForegroundService(service);
+            if (Settings.canDrawOverlays(this)) startService(new Intent(this, OverlayService.class));
             finish();
         }
     }

@@ -10,14 +10,12 @@ import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.imgproc.Imgproc
 import java.util.ArrayDeque
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 
 /** In-memory recognition runtime. No frame, card state, or identifier is uploaded or persisted. */
 object AssistantRuntime {
     private lateinit var app: Context
     private var vision: Vision? = null
-    private val listeners = CopyOnWriteArrayList<() -> Unit>()
     private val state = AtomicReference(AssistantSnapshot.initial())
     private val votes = HashMap<String, RowVote>()
 
@@ -67,14 +65,13 @@ object AssistantRuntime {
         val order = "DX2AKQJT9876543"
         val full = linkedMapOf<Char, Int>().apply { order.forEach { put(it, if (it == 'D' || it == 'X') 1 else 4) } }
         rows.forEach { row -> row.forEach { c -> if (c in full) full[c] = (full.getValue(c) - 1).coerceAtLeast(0) } }
-        return order.map { if (it == 'T') "10" else it.toString() }.joinToString(" ") + "\n" +
-            order.joinToString("  ") { full.getValue(it).toString() }
+        val labels = order.map { card -> if (card == 'T') "10" else card.toString() }.joinToString(" ")
+        val counts = order.toCharArray().map { card -> full.getValue(card).toString() }.joinToString("  ")
+        return "$labels\n$counts"
     }
 
     @JvmStatic fun current(): AssistantSnapshot = state.get()
-    @JvmStatic fun addListener(listener: Runnable) { listeners += { listener.run() } }
-    @JvmStatic fun removeListener(listener: Runnable) { listeners.removeIf { false }; /* overlay also polls on start */ }
-    private fun publish(snapshot: AssistantSnapshot) { state.set(snapshot); listeners.forEach { it() } }
+    private fun publish(snapshot: AssistantSnapshot) { state.set(snapshot) }
 
     private class RowVote(private val size: Int) {
         private val values = ArrayDeque<String>()

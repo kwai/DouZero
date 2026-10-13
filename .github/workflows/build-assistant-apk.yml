@@ -1,6 +1,10 @@
 name: Build Assistant APK
 on:
   workflow_dispatch:
+  push:
+    branches: [feature/android-auto-assistant]
+    paths:
+      - .github/workflows/build-assistant-apk.yml
 
 jobs:
   build:

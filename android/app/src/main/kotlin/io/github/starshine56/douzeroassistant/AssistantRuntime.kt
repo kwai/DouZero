@@ -60,7 +60,7 @@ object AssistantRuntime {
                 val noTap = Tapper { _, _ -> Unit }
                 val layout = Layout(mapOf(
                     // Measured from the supplied 2400x1080 independent-app screenshot after scaling to work height 810.
-                    Regions.LANDLORD_CARDS to RegionSpec(1015, 0, 190, 100, Anchor.LEFT),
+                    Regions.LANDLORD_CARDS to RegionSpec(1040, 5, 110, 45, Anchor.LEFT),
                     Regions.RIGHT_PLAYED to RegionSpec(900, 155, 520, 185, Anchor.LEFT),
                     Regions.MY_HAND to RegionSpec(120, 480, 1450, 190, Anchor.LEFT),
                 ))

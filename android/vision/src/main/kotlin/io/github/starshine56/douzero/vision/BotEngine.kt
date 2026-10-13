@@ -291,23 +291,33 @@ class BotEngine(
     }
 
     private fun waitHand(vararg sizes: Int): CardRow {
+        var fingerprint = ""
+        var stable = 0
         while (true) {
             grab()
             checkMeta()
             val row = cards('m', Regions.MY_HAND)
-            if (row.size in sizes) return row
-            hint("等待识别手牌：识别到 ${row.size} 张 ${row.sortedText()}")
+            val text = row.sortedText()
+            stable = if (text == fingerprint) stable + 1 else 1
+            fingerprint = text
+            if (row.size in sizes && stable >= 3) return row
+            hint("等待稳定手牌：识别到 ${row.size} 张 $text（$stable/3）")
             sleep(200)
         }
     }
 
     private fun waitThree(): List<Int> {
+        var fingerprint = ""
+        var stable = 0
         while (true) {
             grab()
             checkMeta()
             val row = vision.landlordCards(minOf(conf, 0.62))
-            if (row.size == 3) return row.env()
-            hint("等待识别底牌：识别到 ${row.size} 张 ${row.sortedText()}")
+            val text = row.sortedText()
+            stable = if (text == fingerprint) stable + 1 else 1
+            fingerprint = text
+            if (row.size == 3 && stable >= 3) return row.env()
+            hint("等待稳定底牌：识别到 ${row.size} 张 $text（$stable/3）")
             sleep(200)
         }
     }
@@ -554,11 +564,13 @@ class BotEngine(
 
     private fun record(state: GameState, move: List<Int>) {
         if (state.acting != state.user && move.size > state.cardsLeft.getValue(state.acting)) {
-            log("警告：${state.acting.label}出了 ${move.size} 张，但记录中只剩 ${state.cardsLeft.getValue(state.acting)} 张")
+            throw IllegalStateException("${state.acting.label}识别到 ${move.size} 张，但记录中只剩 ${state.cardsLeft.getValue(state.acting)} 张；已暂停本局推荐")
         }
         if (state.acting != state.user && move.isNotEmpty()) {
             val unseen = state.otherHandCards().toMutableList()
-            if (!move.all { unseen.remove(it) }) log("警告：识别到的出牌 ${Cards.formatDesc(move)} 与记牌器不符，可能识别有误")
+            if (!move.all { unseen.remove(it) }) {
+                throw IllegalStateException("出牌 ${Cards.formatDesc(move)} 违反54张牌守恒；已暂停本局推荐")
+            }
         }
         state.play(move)
         listener.onHand(Cards.formatDesc(state.hand))

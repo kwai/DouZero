@@ -39,6 +39,8 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
     val work = Mat()
     private val workGray = Mat()
     private var grayValid = false
+    /** Locked after a physical 17/20-card deal, avoiding three-scale matching on every mid-game frame. */
+    private var handGlyphScale: Double? = null
 
     /** Device pixels per work pixel. */
     var scale = 1.0
@@ -156,7 +158,7 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
             }
             return kept.sortedBy { it.match.x }
         }
-        val preferred = if (set != 'm') 1.00 else when {
+        val preferred = if (set != 'm') 1.00 else handGlyphScale ?: when {
             width <= 1520 -> 0.90
             width >= 1840 -> 1.15
             else -> 1.00
@@ -165,10 +167,16 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
         // A wide-screen test or another game may keep the same glyph size. For hands, retry the
         // known public-client scales when the preferred scale cannot form a physical 17/20-card deal.
         if (set == 'm' && hits.size !in setOf(17, 20)) {
-            hits = listOf(0.90, 1.00, 1.15).distinct().map(::detect)
-                .filter { row -> row.size <= 20 && row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 1 else 4 } }
-                .maxWithOrNull(compareBy<List<CardHit>> { if (it.size in setOf(17, 20)) 1 else 0 }
-                    .thenBy { it.size }.thenBy { row -> row.sumOf { it.match.score } }) ?: hits
+            val choices = listOf(0.90, 1.00, 1.15).distinct().associateWith(::detect)
+                .filterValues { row -> row.size <= 20 && row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 1 else 4 } }
+            val best = choices.maxWithOrNull(compareBy<Map.Entry<Double, List<CardHit>>> { if (it.value.size in setOf(17, 20)) 1 else 0 }
+                .thenBy { it.value.size }.thenBy { e -> e.value.sumOf { it.match.score } })
+            if (best != null) {
+                hits = best.value
+                if (hits.size in setOf(17, 20)) handGlyphScale = best.key
+            }
+        } else if (set == 'm' && hits.size in setOf(17, 20)) {
+            handGlyphScale = preferred
         }
         if (jokerByColor) hits = resolveJokers(hits)
         return CardRow(hits)

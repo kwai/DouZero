@@ -156,7 +156,7 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
             }
             return kept.sortedBy { it.match.x }
         }
-        val preferred = when {
+        val preferred = if (set != 'm') 1.00 else when {
             width <= 1520 -> 0.90
             width >= 1840 -> 1.15
             else -> 1.00

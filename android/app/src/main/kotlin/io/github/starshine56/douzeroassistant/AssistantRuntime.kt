@@ -2,84 +2,100 @@ package io.github.starshine56.douzeroassistant
 
 import android.content.Context
 import android.graphics.Bitmap
-import io.github.starshine56.douzero.vision.Layout
-import io.github.starshine56.douzero.vision.Regions
-import io.github.starshine56.douzero.vision.TemplateStore
-import io.github.starshine56.douzero.vision.Vision
+import io.github.starshine56.douzero.core.Cards
+import io.github.starshine56.douzero.core.OrtModels
+import io.github.starshine56.douzero.core.Position
+import io.github.starshine56.douzero.vision.*
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.imgproc.Imgproc
-import java.util.ArrayDeque
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-/** In-memory recognition runtime. No frame, card state, or identifier is uploaded or persisted. */
+/** Local-only bridge: MediaProjection -> OpenCV -> observable game -> DouZero -> overlay. */
 object AssistantRuntime {
     private lateinit var app: Context
-    private var vision: Vision? = null
     private val state = AtomicReference(AssistantSnapshot.initial())
-    private val votes = HashMap<String, RowVote>()
+    private val frameLock = Any()
+    private val latestBgr = Mat()
+    private var hasFrame = false
+    private val starting = AtomicBoolean(false)
+    @Volatile private var engine: BotEngine? = null
+    private var models: OrtModels? = null
 
     @JvmStatic fun initialize(context: Context, openCvLoaded: Boolean) {
         app = context.applicationContext
-        if (!openCvLoaded) {
-            publish(AssistantSnapshot("OpenCV 初始化失败", "", "", "", "", "--", "--", "识牌不可用"))
-            return
-        }
-        val templates = TemplateStore { name ->
-            runCatching { app.assets.open("templates/$name.png").use { it.readBytes() } }.getOrNull()
-        }
-        vision = Vision(templates, Layout())
-        for (name in listOf("hand", "bottom", "left", "right")) votes[name] = RowVote(3)
-        publish(AssistantSnapshot("等待横屏牌桌", "", "", "", "", "模型未安装", "--", "等待稳定识别"))
+        publish(if (openCvLoaded) snapshot(status = "等待横屏牌桌")
+        else snapshot(status = "OpenCV 初始化失败", remaining = "识牌不可用"))
     }
 
+    /** Called by the latest-frame-only worker; ownership of [bitmap] is transferred here. */
     @JvmStatic fun process(bitmap: Bitmap) {
-        val detector = vision ?: return
-        val rgba = Mat()
-        val bgr = Mat()
+        val rgba = Mat(); val bgr = Mat()
         try {
             Utils.bitmapToMat(bitmap, rgba)
             Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR)
-            detector.setDeviceImage(bgr)
-            val hand = votes.getValue("hand").push(detector.cards('m', Regions.MY_HAND).sortedText())
-            val bottom = votes.getValue("bottom").push(detector.landlordCards().sortedText())
-            val left = votes.getValue("left").push(detector.cards('o', Regions.LEFT_PLAYED).sortedText())
-            val right = votes.getValue("right").push(detector.cards('o', Regions.RIGHT_PLAYED).sortedText())
-            val stable = hand.stable && hand.value.length in 17..20
-            val status = when {
-                !stable -> "识别中：等待手牌连续稳定"
-                left.stable && right.stable -> "牌面已稳定；等待模型和牌局接线"
-                else -> "手牌已稳定；等待桌面出牌稳定"
-            }
-            val remaining = if (stable) remainingText(hand.value, bottom.value, left.value, right.value) else "等待稳定识别"
-            publish(AssistantSnapshot(status, hand.value, bottom.value, left.value, right.value,
-                "模型未安装", "未生成候选", remaining))
+            synchronized(frameLock) { bgr.copyTo(latestBgr); hasFrame = true }
+            ensureEngine()
         } catch (t: Throwable) {
-            publish(state.get().let { AssistantSnapshot("识牌错误：${t.javaClass.simpleName}", it.hand(), it.bottom(), it.leftPlay(), it.rightPlay(), "--", "--", "已暂停推荐") })
+            publish(snapshot(status = "画面处理错误：${t.javaClass.simpleName}", remaining = "已暂停推荐"))
         } finally {
             rgba.release(); bgr.release(); bitmap.recycle()
         }
     }
 
-    private fun remainingText(vararg rows: String): String {
-        val order = "DX2AKQJT9876543"
-        val full = linkedMapOf<Char, Int>().apply { order.forEach { put(it, if (it == 'D' || it == 'X') 1 else 4) } }
-        rows.forEach { row -> row.forEach { c -> if (c in full) full[c] = (full.getValue(c) - 1).coerceAtLeast(0) } }
-        val labels = order.map { card -> if (card == 'T') "10" else card.toString() }.joinToString(" ")
-        val counts = order.toCharArray().map { card -> full.getValue(card).toString() }.joinToString("  ")
-        return "$labels\n$counts"
+    private fun ensureEngine() {
+        if (engine != null || !starting.compareAndSet(false, true)) return
+        Thread({
+            try {
+                publish(snapshot(status = "加载本地 DouZero 模型…"))
+                val ort = OrtModels({ name -> app.assets.open("models/$name").use { it.readBytes() } }, threads = 4)
+                models = ort
+                val templates = TemplateStore { name ->
+                    runCatching { app.assets.open("templates/$name.png").use { it.readBytes() } }.getOrNull()
+                }
+                val source = ScreenSource { dst -> synchronized(frameLock) {
+                    if (!hasFrame) false else { latestBgr.copyTo(dst); true }
+                } }
+                val noTap = Tapper { _, _ -> Unit }
+                val e = BotEngine(source, noTap, Vision(templates, Layout()), BotAi(ort.models), listener)
+                e.settings = BotSettings(autoPlay = false, continuous = true, clickPopups = false, showCards = false)
+                engine = e
+                e.start()
+            } catch (t: Throwable) {
+                publish(snapshot(status = "模型加载失败：${t.javaClass.simpleName}", recommendation = "不可用", remaining = "请使用含模型的构建"))
+            } finally { starting.set(false) }
+        }, "assistant-engine-start").start()
     }
 
-    @JvmStatic fun current(): AssistantSnapshot = state.get()
+    private val listener = object : BotListener {
+        override fun onStatus(text: String) = update { copy(it, status = text) }
+        override fun onRole(position: Position?) = update { copy(it, status = "${textStatus(it)} · ${position?.label ?: "角色未知"}") }
+        override fun onHand(cards: String) = update { copy(it, hand = cards) }
+        override fun onThreeCards(cards: String) = update { copy(it, bottom = cards) }
+        override fun onSuggestion(text: String) = update { copy(it, recommendation = text.ifEmpty { "--" }) }
+        override fun onCandidates(text: String) = update { copy(it, candidates = text.ifEmpty { "--" }) }
+        override fun onLeftPlayed(text: String) = update { copy(it, left = text) }
+        override fun onRightPlayed(text: String) = update { copy(it, right = text) }
+        override fun onRemaining(counts: IntArray) = update { copy(it, remaining = remainingText(counts)) }
+        override fun onNewGame() = publish(snapshot(status = "等待新一局"))
+        override fun onStopped() = update { copy(it, status = "分析已停止") }
+    }
+
+    private fun remainingText(counts: IntArray): String {
+        val labels = Cards.REAL_DESC.map { if (it == 'T') "10" else it.toString() }.joinToString(" ")
+        return labels + "\n" + counts.joinToString("  ")
+    }
+
+    private fun textStatus(s: AssistantSnapshot) = s.status().substringBefore(" · ")
+    private inline fun update(block: (AssistantSnapshot) -> AssistantSnapshot) { publish(block(state.get())) }
+    private fun copy(s: AssistantSnapshot, status: String = s.status(), hand: String = s.hand(), bottom: String = s.bottom(),
+                     left: String = s.leftPlay(), right: String = s.rightPlay(), recommendation: String = s.recommendation(),
+                     candidates: String = s.candidates(), remaining: String = s.remaining()) =
+        AssistantSnapshot(status, hand, bottom, left, right, recommendation, candidates, remaining)
+    private fun snapshot(status: String, hand: String = "", bottom: String = "", left: String = "", right: String = "",
+                         recommendation: String = "--", candidates: String = "--", remaining: String = "等待稳定识别") =
+        AssistantSnapshot(status, hand, bottom, left, right, recommendation, candidates, remaining)
     private fun publish(snapshot: AssistantSnapshot) { state.set(snapshot) }
-
-    private class RowVote(private val size: Int) {
-        private val values = ArrayDeque<String>()
-        data class Result(val value: String, val stable: Boolean)
-        fun push(value: String): Result {
-            values.addLast(value); while (values.size > size) values.removeFirst()
-            val winner = values.groupingBy { it }.eachCount().maxByOrNull { it.value }
-            return Result(winner?.key.orEmpty(), values.size == size && (winner?.value ?: 0) >= size / 2 + 1)
-        }
-    }
+    @JvmStatic fun current(): AssistantSnapshot = state.get()
 }

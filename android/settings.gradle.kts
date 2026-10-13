@@ -6,4 +6,4 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "DouZeroAssistant"
-include(":core", ":app")
+include(":core", ":vision", ":app")

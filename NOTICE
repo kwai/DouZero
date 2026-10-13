@@ -4,6 +4,7 @@ This product includes software developed by the DouZero project
 (https://github.com/kwai/DouZero), licensed under Apache License 2.0.
 
 The Android Kotlin rule engine, observation encoder, ONNX model adapter,
+OpenCV template recognizer, mobile templates, anonymized regression screenshots,
 and related parity tests are adapted from
 Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero
 (https://github.com/Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero),

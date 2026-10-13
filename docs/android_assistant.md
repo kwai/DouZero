@@ -29,6 +29,6 @@ This branch adds a local-first assistant around Apache-2.0 DouZero. The Kotlin r
 
 ## Current status
 
-Implemented: card normalization, 54-card invariant, round observations, uncertainty gate, multi-frame voting, minimum-permission Android shell, MediaProjection foreground service, latest-frame backpressure, Kotlin legal-move engine, DouZero observation encoding, ONNX Runtime adapter, Top-3 decision logic, a draggable read-only overlay, a screenshot-specific ROI profile, parity/safety tests, and CI.
+Implemented: card normalization, 54-card invariant, round observations, uncertainty gate, multi-frame voting, minimum-permission Android shell, MediaProjection foreground service, latest-frame backpressure, Kotlin legal-move engine, DouZero observation encoding, ONNX Runtime adapter, Top-3 decision logic, a draggable read-only overlay, a screenshot-specific ROI profile, OpenCV bitmap conversion and live hand/bottom/left/right recognition, bundled Apache-2.0 mobile templates, overlay live recognition updates, real-screenshot regression tests, parity/safety tests, and CI.
 
-Not yet implemented: bundled ONNX weights, OpenCV template assets for the supplied independent-app skin, live bitmap-to-ROI processing, calibration UI, wiring stable events into `GameState`, overlay live updates, and on-device validation. The present APK shell must not be described as a working automatic recognizer yet.
+Not yet implemented: bundled ONNX weights, templates calibrated specifically for the supplied independent-app skin, calibration UI, robust turn/pass event reduction into `GameState`, live AI decisions, and on-device validation. The current build can display recognition attempts but must not yet be described as a reliable automatic recommender.

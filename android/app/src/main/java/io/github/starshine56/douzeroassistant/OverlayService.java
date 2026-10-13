@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -17,14 +19,31 @@ public final class OverlayService extends Service {
     private WindowManager manager;
     private LinearLayout panel;
     private WindowManager.LayoutParams params;
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private TextView title;
+    private TextView recommendation;
+    private TextView candidates;
+    private TextView counter;
+    private final Runnable refresh = new Runnable() {
+        @Override public void run() {
+            AssistantSnapshot s = AssistantRuntime.current();
+            title.setText("✥  " + s.status() + (s.hand().isEmpty() ? "" : " · 手牌 " + s.hand()));
+            recommendation.setText("推荐：" + s.recommendation());
+            candidates.setText("Top 3：" + s.candidates() + "\n上家：" + empty(s.leftPlay()) + "  下家：" + empty(s.rightPlay()) + "  底牌：" + empty(s.bottom()));
+            counter.setText("剩余牌：\n" + s.remaining());
+            main.postDelayed(this, 350);
+        }
+    };
+
+    private static String empty(String value) { return value.isEmpty() ? "--" : value; }
 
     @Override public void onCreate() {
         super.onCreate();
         manager = getSystemService(WindowManager.class);
-        TextView title = text("✥  AI 等待稳定牌局", 14, 0xffffd54f);
-        TextView recommendation = text("推荐：--", 16, 0xff81c784);
-        TextView candidates = text("Top 3：--", 11, Color.LTGRAY);
-        TextView counter = text("剩余牌：等待识别", 11, 0xff90caf9);
+        title = text("✥  AI 等待稳定牌局", 14, 0xffffd54f);
+        recommendation = text("推荐：--", 16, 0xff81c784);
+        candidates = text("Top 3：--", 11, Color.LTGRAY);
+        counter = text("剩余牌：等待识别", 11, 0xff90caf9);
         panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(14, 8, 14, 8);
@@ -52,6 +71,7 @@ public final class OverlayService extends Service {
             return true;
         });
         manager.addView(panel, params);
+        main.post(refresh);
     }
 
     private TextView text(String value, float size, int color) {
@@ -59,6 +79,7 @@ public final class OverlayService extends Service {
     }
 
     @Override public void onDestroy() {
+        main.removeCallbacks(refresh);
         if (panel != null) manager.removeView(panel);
         super.onDestroy();
     }

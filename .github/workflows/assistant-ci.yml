@@ -28,4 +28,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: "8.9" }
       - working-directory: android
-        run: gradle :core:test :app:assembleDebug --stacktrace
+        run: gradle :core:test :vision:test :app:assembleDebug --stacktrace

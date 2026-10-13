@@ -30,5 +30,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":vision"))
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
+    implementation("org.opencv:opencv:4.10.0")
 }

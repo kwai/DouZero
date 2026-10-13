@@ -19,6 +19,8 @@ object AssistantRuntime {
     private val starting = AtomicBoolean(false)
     @Volatile private var engine: BotEngine? = null
     private var models: OrtModels? = null
+    @Volatile private var lastRemaining = IntArray(Cards.REAL_DESC.length)
+    @Volatile private var seatCounts = "地主 20 · 上家 17 · 下家 17"
 
     @JvmStatic fun initialize(context: Context, openCvLoaded: Boolean) {
         app = context.applicationContext
@@ -76,14 +78,26 @@ object AssistantRuntime {
         override fun onCandidates(text: String) = update { copy(it, candidates = text.ifEmpty { "--" }) }
         override fun onLeftPlayed(text: String) = update { copy(it, left = text) }
         override fun onRightPlayed(text: String) = update { copy(it, right = text) }
-        override fun onRemaining(counts: IntArray) = update { copy(it, remaining = remainingText(counts)) }
-        override fun onNewGame() = publish(snapshot(status = "等待新一局"))
+        override fun onRemaining(counts: IntArray) {
+            lastRemaining = counts.copyOf()
+            update { copy(it, remaining = remainingText(lastRemaining)) }
+        }
+        override fun onSeatCounts(landlord: Int, landlordUp: Int, landlordDown: Int) {
+            seatCounts = "地主 $landlord · 上家 $landlordUp · 下家 $landlordDown"
+            update { copy(it, remaining = remainingText(lastRemaining)) }
+        }
+        override fun onNewGame() {
+            lastRemaining = IntArray(Cards.REAL_DESC.length)
+            seatCounts = "地主 20 · 上家 17 · 下家 17"
+            publish(snapshot(status = "等待新一局"))
+        }
         override fun onStopped() = update { copy(it, status = "分析已停止") }
     }
 
     private fun remainingText(counts: IntArray): String {
         val labels = Cards.REAL_DESC.map { if (it == 'T') "10" else it.toString() }.joinToString(" ")
-        return labels + "\n" + counts.joinToString("  ")
+        val values = counts.joinToString("  ")
+        return "$seatCounts\n全场未见 ${counts.sum()} 张\n$labels\n$values"
     }
 
     private fun textStatus(s: AssistantSnapshot) = s.status().substringBefore(" · ")

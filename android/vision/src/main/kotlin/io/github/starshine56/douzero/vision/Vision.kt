@@ -135,34 +135,41 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
      */
     fun cards(set: Char, region: String, confidence: Double = 0.8, jokerByColor: Boolean = true): CardRow {
         val r = rect(region)
-        val candidates = ArrayList<CardHit>()
-        // Public screenshots from 欢乐/JJ/途游 clients show three common glyph scales.
-        // Width is a stable discriminator after every screenshot is normalized to height 810.
-        val glyphScale = when {
+        fun detect(glyphScale: Double): List<CardHit> {
+            val candidates = ArrayList<CardHit>()
+            for (rank in Cards.REAL_DESC) {
+                val t = templates.grayScaled("$set$rank", glyphScale) ?: continue
+                withMatch(gray(), r, t) { data, cols, rows ->
+                    for (yy in 0 until rows) for (xx in 0 until cols) {
+                        val v = data[yy * cols + xx]
+                        if (v >= confidence) candidates += CardHit(rank, Match(r.x + xx, r.y + yy, t.cols(), t.rows(), v.toDouble()))
+                    }
+                }
+            }
+            candidates.sortByDescending { it.match.score }
+            val kept = ArrayList<CardHit>()
+            for (c in candidates) {
+                val m = c.match
+                val minDx = maxOf(12, (m.w * 0.6).roundToInt())
+                val clash = kept.any { abs(it.match.x - m.x) <= minDx && abs(it.match.y - m.y) <= m.h * 1.6 }
+                if (!clash) kept += c
+            }
+            return kept.sortedBy { it.match.x }
+        }
+        val preferred = when {
             width <= 1520 -> 0.90
             width >= 1840 -> 1.15
             else -> 1.00
         }
-        for (rank in Cards.REAL_DESC) {
-            val t = templates.grayScaled("$set$rank", glyphScale) ?: continue
-            withMatch(gray(), r, t) { data, cols, rows ->
-                for (yy in 0 until rows) for (xx in 0 until cols) {
-                    val v = data[yy * cols + xx]
-                    if (v >= confidence) candidates += CardHit(rank, Match(r.x + xx, r.y + yy, t.cols(), t.rows(), v.toDouble()))
-                }
-            }
+        var hits = detect(preferred)
+        // A wide-screen test or another game may keep the same glyph size. For hands, retry the
+        // known public-client scales when the preferred scale cannot form a physical 17/20-card deal.
+        if (set == 'm' && hits.size !in setOf(17, 20)) {
+            hits = listOf(0.90, 1.00, 1.15).distinct().map(::detect)
+                .filter { row -> row.size <= 20 && row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 1 else 4 } }
+                .maxWithOrNull(compareBy<List<CardHit>> { if (it.size in setOf(17, 20)) 1 else 0 }
+                    .thenBy { it.size }.thenBy { row -> row.sumOf { it.match.score } }) ?: hits
         }
-        candidates.sortByDescending { it.match.score }
-        val kept = ArrayList<CardHit>()
-        for (c in candidates) {
-            val m = c.match
-            val minDx = maxOf(12, (m.w * 0.6).roundToInt())
-            // One glyph can produce a second hit lower down (notably JOKER letters). Suppress by x
-            // across a generous y range; genuinely selected cards move as a whole and still yield one hit.
-            val clash = kept.any { abs(it.match.x - m.x) <= minDx && abs(it.match.y - m.y) <= m.h * 1.6 }
-            if (!clash) kept += c
-        }
-        var hits = kept.sortedBy { it.match.x }
         if (jokerByColor) hits = resolveJokers(hits)
         return CardRow(hits)
     }

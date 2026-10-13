@@ -45,6 +45,8 @@ interface BotListener {
 
     /** Unseen cards per rank, index-aligned with [Cards.REAL_DESC] (记牌器). */
     fun onRemaining(counts: IntArray) {}
+    /** Remaining hand sizes in fixed landlord / landlord-up / landlord-down order. */
+    fun onSeatCounts(landlord: Int, landlordUp: Int, landlordDown: Int) {}
     fun onNewGame() {}
     fun onStopped() {}
 }
@@ -566,6 +568,11 @@ class BotEngine(
     private fun updateRemaining(state: GameState) {
         val unseen = Cards.formatDesc(state.otherHandCards())
         listener.onRemaining(IntArray(Cards.REAL_DESC.length) { i -> unseen.count { it == Cards.REAL_DESC[i] } })
+        listener.onSeatCounts(
+            state.cardsLeft.getValue(Position.LANDLORD),
+            state.cardsLeft.getValue(Position.LANDLORD_UP),
+            state.cardsLeft.getValue(Position.LANDLORD_DOWN),
+        )
     }
 
     private fun myTurn(state: GameState, first: Boolean) {

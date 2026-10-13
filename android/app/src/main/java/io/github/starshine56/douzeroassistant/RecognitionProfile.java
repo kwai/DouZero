@@ -27,7 +27,9 @@ final class RecognitionProfile {
         if (width <= 0 || height <= 0) throw new IllegalArgumentException("invalid reference size");
         Map<String, Rect> regions = new HashMap<>();
         JSONObject source = root.getJSONObject("regions");
-        for (String name : source.keySet()) {
+        java.util.Iterator<String> names = source.keys();
+        while (names.hasNext()) {
+            String name = names.next();
             JSONObject r = source.getJSONObject(name);
             Rect rect = new Rect(r.getInt("x"), r.getInt("y"),
                     r.getInt("x") + r.getInt("width"), r.getInt("y") + r.getInt("height"));

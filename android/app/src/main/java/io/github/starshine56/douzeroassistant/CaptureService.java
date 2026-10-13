@@ -7,7 +7,9 @@ import android.hardware.display.DisplayManager;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 public final class CaptureService extends Service {
     static final String EXTRA_RESULT_CODE = "capture.resultCode";
@@ -34,6 +36,9 @@ public final class CaptureService extends Service {
         if (resultCode != Activity.RESULT_OK || resultData == null) { stopSelf(); return START_NOT_STICKY; }
         MediaProjectionManager manager = getSystemService(MediaProjectionManager.class);
         projection = manager.getMediaProjection(resultCode, resultData);
+        projection.registerCallback(new MediaProjection.Callback() {
+            @Override public void onStop() { stopSelf(); }
+        }, new Handler(Looper.getMainLooper()));
         int width = getResources().getDisplayMetrics().widthPixels;
         int height = getResources().getDisplayMetrics().heightPixels;
         int density = getResources().getDisplayMetrics().densityDpi;

@@ -4,6 +4,9 @@ on:
   push:
     branches: [feature/android-auto-assistant]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,9 +34,29 @@ jobs:
       - name: Test and build ARM64 debug APK
         working-directory: android
         run: gradle :core:test :vision:test :app:assembleDebug --stacktrace
+      - name: Verify and name APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk douzero-assistant-arm64-preview.apk
+          unzip -l douzero-assistant-arm64-preview.apk | grep -q 'lib/arm64-v8a/'
+          test -z "$(unzip -l douzero-assistant-arm64-preview.apk | grep -E 'lib/(armeabi-v7a|x86|x86_64)/' || true)"
+          test "$(unzip -l douzero-assistant-arm64-preview.apk | grep -c 'assets/models/.*onnx')" -eq 6
+          sha256sum douzero-assistant-arm64-preview.apk | tee douzero-assistant-arm64-preview.apk.sha256
       - uses: actions/upload-artifact@v4
         with:
-          name: douzero-assistant-arm64-dev
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: douzero-assistant-arm64-preview
+          path: |
+            douzero-assistant-arm64-preview.apk
+            douzero-assistant-arm64-preview.apk.sha256
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
+      - name: Publish rolling preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-assistant-preview --cleanup-tag -y || true
+          gh release create android-assistant-preview \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Android AI Assistant Preview" \
+            --notes "ARM64 preview: local MediaProjection/OpenCV recognition, observed-game state, six ONNX models, and read-only Top-3 overlay. No AccessibilityService or automatic clicking. Built from $GITHUB_SHA." \
+            douzero-assistant-arm64-preview.apk \
+            douzero-assistant-arm64-preview.apk.sha256

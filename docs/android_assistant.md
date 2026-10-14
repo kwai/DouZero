@@ -1,0 +1,38 @@
+# Android automatic-recognition assistant
+
+This branch adds a local-first assistant around Apache-2.0 DouZero. The Kotlin rule engine, observation encoder, ONNX adapter and parity tests are adapted from the Apache-2.0 project `Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero`; see `NOTICE`.
+
+## Product boundary
+
+- Standard three-player DouDizhu, no wild cards in the first release.
+- Android landscape capture through MediaProjection.
+- Read-only overlay with remaining-card counts and Top-3 recommendations.
+- No accessibility service, simulated touch, account access, SMS/location/device-ID collection, remote screenshots, or cleartext traffic.
+- Recognition uncertainty or violation of the 54-card invariant blocks recommendations and asks for correction.
+
+## Architecture
+
+1. `CaptureService` receives explicit system screen-sharing consent.
+2. `FramePipeline` keeps only the latest frame to avoid analyzing animations late.
+3. The first recognition backend uses OpenCV rank-template matching; an optional NCNN detector can replace it after a licensed/locally-trained model is available.
+4. Resolution-independent ROI routing separates hand, center play, left play, right play, bottom cards and remaining counters. A first 2400×1080 profile was measured from the supplied screenshot.
+5. `MultiFrameStabilizer` requires repeated observations.
+6. `RoundState` enforces physical card counts and maintains unseen cards.
+7. The inference adapter converts a verified state to the existing DouZero environment.
+8. A read-only overlay presents Top-3 actions, score and concise reasons.
+
+## Reference policy
+
+- `kwai/DouZero`: source dependency under Apache-2.0; existing LICENSE retained.
+- `Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero`: Apache-2.0 Kotlin rules/encoder/ONNX adapter/parity tests, adapted with attribution and without its automatic-control layer.
+- Other public repositories without an explicit license and the supplied proprietary APK are behavior/architecture references only. Their source, model weights, artwork, protocol and server endpoints are not copied.
+
+## Current status
+
+Implemented: card normalization and conservation checks, MediaProjection latest-frame capture, OpenCV hand/bottom/left/right/pass/turn recognition, multi-frame settling, observed three-seat `GameState`, legal-action generation, six verified ONNX models fetched into ARM64 builds, DouZero Top-3 decisions, and a draggable read-only overlay. The recorder shows every rank (big/small joker, 2, A…3), each unseen count, the total unseen cards, and landlord/up/down remaining hand sizes. The overlay has a one-tap compact mode that leaves only a small `AI` button while capture, recognition and inference continue. No AccessibilityService, Root input, automatic click, network permission, device identifier, SMS or location access is present.
+
+Validation: Python core tests, Kotlin upstream parity and safety tests, real mobile screenshot recognition tests, ONNX value/decision parity tests when models are present, APK content/ABI checks, and Android debug compilation run in CI. The supplied 2400×1080 screenshots were measured locally: hand `DX987665433` / right play `987654` in the first and the 17-card deal `X2AKKQJT655554444` in the second. Public screenshots from JJ 斗地主 and 途游斗地主 were additionally used locally (not redistributed) to validate adaptive 0.90/1.00/1.15 glyph scales; clear JJ and 途游 hands matched their visible ranks. Remaining limitation: button/pass/bottom-card placement still varies by game, so unfamiliar clients may track the hand but require a dedicated layout profile before full-round recommendations are reliable.
+
+## Cross-project optimization review
+
+Reviewing licensed DouZero Android/desktop assistants and behavior-only references produced three hardening changes: initial hand and bottom cards now require three identical frames, a physical 17/20-card deal locks the detected 0.90/1.00/1.15 glyph scale to avoid repeated scans, and impossible opponent plays (seat count or 54-card conservation violations) stop recommendations instead of poisoning later state. Undo/manual correction remains useful for a future calibration UI; deep Monte Carlo search was not enabled on phone because repeated rollout inference would add substantial latency and heat on top of DouZero's imperfect-information policy.

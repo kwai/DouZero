@@ -1,0 +1,65 @@
+name: Build Assistant APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/android-auto-assistant]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.9" }
+      - name: Install Android SDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+      - name: Fetch verified Apache-2.0 ONNX models
+        env:
+          APK_URL: https://github.com/Superbaaaaber/Auto-doudizhu-on-Android-based-on-Douzero/releases/download/v1.0.0/hlddz-auto-v1.0.0-arm64-v8a.apk
+          APK_SHA256: c3afdd046f693027d56c77da993fca12c6ef15184f0715526b90138dcdb43024
+        run: |
+          curl -fL --retry 5 --retry-all-errors "$APK_URL" -o /tmp/reference.apk
+          echo "$APK_SHA256  /tmp/reference.apk" | sha256sum -c -
+          mkdir -p android/app/src/main/assets/models
+          unzip -j /tmp/reference.apk 'assets/models/*.onnx' -d android/app/src/main/assets/models
+          test "$(find android/app/src/main/assets/models -name '*.onnx' | wc -l)" -eq 6
+          ls -lh android/app/src/main/assets/models
+      - name: Test and build ARM64 debug APK
+        working-directory: android
+        run: gradle :core:test :vision:test :app:assembleDebug --stacktrace
+      - name: Verify and name APK
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          NAME="douzero-assistant-v0.4.1-${SHORT_SHA}-arm64.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$NAME"
+          unzip -l "$NAME" | grep -q 'lib/arm64-v8a/'
+          test -z "$(unzip -l "$NAME" | grep -E 'lib/(armeabi-v7a|x86|x86_64)/' || true)"
+          test "$(unzip -l "$NAME" | grep -c 'assets/models/.*onnx')" -eq 6
+          sha256sum "$NAME" | tee "$NAME.sha256"
+          echo "APK_NAME=$NAME" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: douzero-assistant-v0.4.1-${{ github.sha }}-arm64
+          path: |
+            ${{ env.APK_NAME }}
+            ${{ env.APK_NAME }}.sha256
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish rolling preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-assistant-preview --cleanup-tag -y || true
+          gh release create android-assistant-preview \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Android AI Assistant Preview" \
+            --notes "ARM64 preview: local MediaProjection/OpenCV recognition, observed-game state, six ONNX models, and read-only Top-3 overlay. No AccessibilityService or automatic clicking. Built from $GITHUB_SHA." \
+            "${APK_NAME}" \
+            "${APK_NAME}.sha256"

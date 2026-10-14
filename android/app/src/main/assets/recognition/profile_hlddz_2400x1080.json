@@ -1,0 +1,20 @@
+{
+  "id": "hlddz-landscape-2400x1080-v1",
+  "referenceWidth": 2400,
+  "referenceHeight": 1080,
+  "orientation": "landscape",
+  "source": "user-calibrated screenshot 1000793820.jpg",
+  "regions": {
+    "myHand": {"x": 570, "y": 650, "width": 1250, "height": 330},
+    "leftPlayed": {"x": 500, "y": 210, "width": 480, "height": 240},
+    "rightPlayed": {"x": 1260, "y": 210, "width": 570, "height": 240},
+    "centerPlayed": {"x": 810, "y": 240, "width": 820, "height": 270},
+    "bottomCards": {"x": 1370, "y": 0, "width": 220, "height": 125},
+    "counter": {"x": 805, "y": 0, "width": 610, "height": 125},
+    "leftRemaining": {"x": 570, "y": 490, "width": 85, "height": 85},
+    "rightRemaining": {"x": 1740, "y": 490, "width": 85, "height": 85},
+    "buttons": {"x": 650, "y": 500, "width": 1070, "height": 150},
+    "leftPass": {"x": 530, "y": 250, "width": 400, "height": 170},
+    "rightPass": {"x": 1500, "y": 250, "width": 350, "height": 170}
+  }
+}

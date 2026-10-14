@@ -21,7 +21,7 @@ public final class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(48, 48, 48, 48);
         TextView status = new TextView(this);
-        status.setText("版本 0.3.1-low-memory（versionCode 7）\n\n修复 vivo 单次清理器强停：六个 ONNX 改为按需加载，提示模式跳过叫牌模型，仅保留当前身份出牌模型。\n仅本地分析，不上传截图，不自动点击游戏。");
+        status.setText("版本 0.4.0-clean-ui（versionCode 8）\n\n默认仅显示状态、建议和备选；手牌与评分放入详情，完整记牌器使用独立可拖动悬浮块。\n仅本地分析，不上传截图，不自动点击游戏。");
         status.setTextSize(18);
         Button overlay = new Button(this);
         overlay.setText("授予悬浮窗权限");

@@ -58,7 +58,7 @@ object AssistantRuntime {
                     Regions.LANDLORD_CARDS to RegionSpec(560, 0, 650, 105, Anchor.LEFT),
                     Regions.RIGHT_PLAYED to RegionSpec(900, 155, 520, 185, Anchor.LEFT),
                     // Search the full lower half; physical 17/20-card filtering selects the actual hand row.
-                    Regions.MY_HAND to RegionSpec(0, 400, 2400, 410, Anchor.LEFT),
+                    Regions.MY_HAND to RegionSpec(140, 450, 1550, 240, Anchor.LEFT),
                 ))
                 val e = BotEngine(source, noTap, Vision(templates, layout), BotAi(ort.models), listener)
                 e.settings = BotSettings(autoPlay = false, continuous = true, clickPopups = false,

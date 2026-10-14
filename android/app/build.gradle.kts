@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.starshine56.douzeroassistant"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.3.1-low-memory"
+        versionCode = 8
+        versionName = "0.4.0-clean-ui"
         ndk { abiFilters += "arm64-v8a" }
     }
 

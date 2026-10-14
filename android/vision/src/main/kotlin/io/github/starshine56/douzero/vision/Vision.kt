@@ -135,14 +135,19 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
         locateIn(name, rect(region), confidence)
 
     fun locateIn(name: String, r: Rect, confidence: Double = 0.8): Match? {
-        val t = templates[name] ?: return null
-        return withMatch(work, r, t) { data, cols, _ ->
-            var best = -2f
-            var bi = -1
-            for (i in data.indices) if (data[i] > best) { best = data[i]; bi = i }
-            if (bi < 0 || best.isNaN() || best < confidence) null
-            else Match(r.x + bi % cols, r.y + bi / cols, t.cols(), t.rows(), best.toDouble())
+        var winner: Match? = null
+        for (candidateName in listOf(name, "${name}_v2", "${name}_v3")) {
+            val t = templates[candidateName] ?: continue
+            val found = withMatch(work, r, t) { data, cols, _ ->
+                var best = -2f
+                var bi = -1
+                for (i in data.indices) if (data[i] > best) { best = data[i]; bi = i }
+                if (bi < 0 || best.isNaN() || best < confidence) null
+                else Match(r.x + bi % cols, r.y + bi / cols, t.cols(), t.rows(), best.toDouble())
+            }
+            if (found != null && (winner == null || found.score > winner.score)) winner = found
         }
+        return winner
     }
 
     /**

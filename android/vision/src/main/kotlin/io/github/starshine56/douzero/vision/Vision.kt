@@ -183,21 +183,26 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
             }?.let { seed -> sorted.filter { abs(it.match.y - seed.match.y) <= maxOf(it.match.h, seed.match.h) * 1.8 } }
                 ?: sorted
         }
-        val preferred = if (set == 'z') 0.90 else if (set != 'm') 1.00 else handGlyphScale ?: when {
+        val preferred = if (set != 'm') 1.00 else handGlyphScale ?: when {
             width <= 1520 -> 0.90
             width >= 1840 -> 1.15
             else -> 1.00
         }
         var hits = detect(preferred)
-        if (set == 'z' && hits.size > 3) {
-            // The top counter also contains rank text. Bottom cards form a compact three-glyph row;
-            // choose the strongest physical triple instead of returning every top-bar match.
-            hits = hits.sortedBy { it.match.x }.windowed(3).filter { row ->
-                val gaps = row.zipWithNext { a, b -> b.match.x - a.match.x }
-                row.maxOf { it.match.y } - row.minOf { it.match.y } <= row.maxOf { it.match.h } &&
-                    gaps.all { it in 8..100 } &&
-                    row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 1 else 3 }
-            }.maxByOrNull { row -> row.sumOf { it.match.score } } ?: hits
+        if (set == 'z') {
+            fun triple(rowIn: List<CardHit>): List<CardHit>? {
+                if (rowIn.size == 3) return rowIn
+                return rowIn.sortedBy { it.match.x }.windowed(3).filter { row ->
+                    val gaps = row.zipWithNext { a, b -> b.match.x - a.match.x }
+                    row.maxOf { it.match.y } - row.minOf { it.match.y } <= row.maxOf { it.match.h } &&
+                        gaps.all { it in 8..100 } &&
+                        row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 1 else 3 }
+                }.maxByOrNull { row -> row.sumOf { it.match.score } }
+            }
+            // The supplied client renders top cards smaller than the original mobile fixture.
+            // Try both scales and select the strongest compact physical triple.
+            hits = listOf(0.90, 1.00).mapNotNull { triple(detect(it)) }
+                .maxByOrNull { row -> row.sumOf { it.match.score } } ?: hits
         }
         // A wide-screen test or another game may keep the same glyph size. For hands, retry the
         // known public-client scales when the preferred scale cannot form a physical 17/20-card deal.

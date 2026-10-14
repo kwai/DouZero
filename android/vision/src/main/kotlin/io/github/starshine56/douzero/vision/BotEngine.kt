@@ -496,7 +496,7 @@ class BotEngine(
             pos = findRole()
             if (pos == null && now() > roleDeadline) {
                 val n = cards('m', Regions.MY_HAND).size
-                throw IllegalStateException("15秒内无法确认角色（可见手牌$n张、底牌${Cards.formatDesc(three)}）；已暂停本局推荐")
+                throw IllegalStateException("15秒内无法确认角色（可见手牌${n}张、底牌${Cards.formatDesc(three)}）；已暂停本局推荐")
             }
             if (pos == null) sleep(200)
         }

@@ -293,6 +293,7 @@ class BotEngine(
     private fun waitHand(vararg sizes: Int): CardRow {
         var fingerprint = ""
         var stable = 0
+        val deadline = now() + 20000
         while (true) {
             grab()
             checkMeta()
@@ -301,6 +302,7 @@ class BotEngine(
             stable = if (text == fingerprint) stable + 1 else 1
             fingerprint = text
             if (row.size in sizes && stable >= 3) return row
+            if (now() > deadline) throw IllegalStateException("20秒内未识别到稳定的${sizes.joinToString("/")}张手牌；${vision.diagnostic()}")
             hint("等待稳定手牌：识别到 ${row.size} 张 $text（$stable/3）")
             sleep(200)
         }
@@ -309,6 +311,7 @@ class BotEngine(
     private fun waitThree(): List<Int> {
         var fingerprint = ""
         var stable = 0
+        val deadline = now() + 20000
         while (true) {
             grab()
             checkMeta()
@@ -317,6 +320,7 @@ class BotEngine(
             stable = if (text == fingerprint) stable + 1 else 1
             fingerprint = text
             if (row.size == 3 && stable >= 3) return row.env()
+            if (now() > deadline) throw IllegalStateException("20秒内未识别到稳定的三张底牌；${vision.diagnostic(Regions.LANDLORD_CARDS)}")
             hint("等待稳定底牌：识别到 ${row.size} 张 $text（$stable/3）")
             sleep(200)
         }
@@ -462,10 +466,9 @@ class BotEngine(
     private fun findRole(): Position? {
         val n = cards('m', Regions.MY_HAND).size
         if (n == 20) return Position.LANDLORD
-        // Some skins cover the first hand card with a landlord badge, leaving only 19 visible.
-        if (n >= 18 && vision.locateIn("landlord", org.opencv.core.Rect(0, 180, vision.width, 520), 0.63) != null) {
-            return Position.LANDLORD
-        }
+        // Some skins cover the first hand card with a landlord badge, leaving only 18/19 visible.
+        // Three flipped bottom cards are a stronger cross-skin signal than a client-specific badge template.
+        if (n >= 18 && vision.landlordCards(minOf(conf, 0.62)).size == 3) return Position.LANDLORD
         if (n == 17) {
             // the landlord plays first; check the right side first like upstream
             if (cards('o', Regions.RIGHT_PLAYED).isNotEmpty()) return Position.LANDLORD_UP
@@ -486,10 +489,15 @@ class BotEngine(
         sleep(500)
         status("识别角色")
         var pos: Position? = null
+        val roleDeadline = now() + 15000
         while (pos == null) {
             grab()
             checkMeta()
             pos = findRole()
+            if (pos == null && now() > roleDeadline) {
+                val n = cards('m', Regions.MY_HAND).size
+                throw IllegalStateException("15秒内无法确认角色（可见手牌$n张、底牌${Cards.formatDesc(three)}）；已暂停本局推荐")
+            }
             if (pos == null) sleep(200)
         }
         listener.onRole(pos)
@@ -497,6 +505,14 @@ class BotEngine(
         val initialHand = if (pos == Position.LANDLORD && bidHand?.size == 17) {
             // More reliable than reading a 20-card row whose first card is covered by the landlord badge.
             (bidHand!! + three).sorted()
+        } else if (pos == Position.LANDLORD && visibleHand.size == 19) {
+            val seen = visibleHand.env().toMutableList()
+            when {
+                Cards.SMALL_JOKER in seen && Cards.BIG_JOKER !in seen -> seen += Cards.BIG_JOKER
+                Cards.BIG_JOKER in seen && Cards.SMALL_JOKER !in seen -> seen += Cards.SMALL_JOKER
+                else -> throw IllegalStateException("地主徽章遮挡一张牌且无法安全推断；已暂停本局推荐")
+            }
+            seen.sorted()
         } else {
             waitHand(if (pos == Position.LANDLORD) 20 else 17).env()
         }
@@ -643,9 +659,11 @@ class BotEngine(
     private fun otherTurn(state: GameState, seat: Seat) {
         val text = "等待${seat.label}出牌"
         if (seat == Seat.RIGHT) listener.onRightPlayed(text) else listener.onLeftPlayed(text)
+        grab()
+        val staleText = cards(seat.set, seat.played).sortedText()
         waitTurnOver(seat)
         // the landlord's first move is never a pass (old 不加倍 labels may still be on screen)
-        val move = waitMove(seat, allowPass = state.history.isNotEmpty())
+        val move = waitMove(seat, allowPass = state.history.isNotEmpty(), staleText = staleText)
         val who = state.acting
         record(state, move)
         val shown = if (move.isEmpty()) "不出" else Cards.formatDesc(move)
@@ -689,14 +707,22 @@ class BotEngine(
     }
 
     /** Wait for [seat]'s move to appear and read it until stable (port of the play_order loops). */
-    private fun waitMove(seat: Seat, allowPass: Boolean = true): List<Int> {
+    private fun waitMove(seat: Seat, allowPass: Boolean = true, staleText: String = ""): List<Int> {
+        var blankSince = 0L
         while (true) {
             grab()
             checkMeta()
             val passed = allowPass && vision.locate("buchu", seat.pass) != null
             val row = cards(seat.set, seat.played)
-            if (row.isNotEmpty()) break
+            if (row.isNotEmpty() && row.sortedText() != staleText) break
             if (passed) return emptyList()
+            if (allowPass && row.isEmpty()) {
+                if (blankSince == 0L) blankSince = now()
+                if (now() - blankSince >= 2500) {
+                    log("${seat.label}区域持续空白，按不出处理")
+                    return emptyList()
+                }
+            } else blankSince = 0L
             if (hasAnimation()) sleep(200) else sleep(100)
         }
         var invalidReads = 0
@@ -769,9 +795,10 @@ class BotEngine(
                 goneSince = 0L
             } else {
                 if (goneSince == 0L) goneSince = now()
-                if (now() - goneSince >= 800) {
-                    // a pass leaves the hand unchanged: only trust it after we saw our buttons
-                    handDiff(state)?.let { if (it.isNotEmpty() || sawButtons) return it }
+                if (now() - goneSince >= 1500) {
+                    // We are already in the tracked self turn. A stable unchanged hand plus legal pass
+                    // is enough when this client's button templates differ from the bundled skin.
+                    handDiff(state)?.let { return it }
                 }
             }
             sleep(150)
@@ -785,9 +812,15 @@ class BotEngine(
         grab()
         val two = cards('m', Regions.MY_HAND).env().sorted()
         if (one != two) return null
-        val rest = state.hand.toMutableList()
-        if (!one.all { rest.remove(it) }) return null
-        return if (isPlayable(state, rest)) rest.sorted() else null
+        // Match every legal action against the observed remaining hand. A landlord badge may keep
+        // exactly one joker permanently hidden, so allow that one-card visual deficit.
+        return state.legalActions().firstOrNull { action ->
+            val expected = state.hand.toMutableList()
+            if (!action.all { expected.remove(it) }) return@firstOrNull false
+            val missing = expected.toMutableList()
+            if (!one.all { missing.remove(it) }) return@firstOrNull false
+            missing.isEmpty() || (missing.size == 1 && missing[0] in setOf(Cards.SMALL_JOKER, Cards.BIG_JOKER))
+        }?.sorted()
     }
 
     private fun hasAnimation(): Boolean {

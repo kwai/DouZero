@@ -21,7 +21,7 @@ public final class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(48, 48, 48, 48);
         TextView status = new TextView(this);
-        status.setText("版本 0.2.2-stage-fix（versionCode 4）\n\n修复：底牌随记牌器移动、地主徽章遮挡首牌、已进入出牌阶段却仍等待叫地主。\n仅本地分析，不上传截图，不自动点击游戏。");
+        status.setText("版本 0.3.0-hardened（versionCode 6）\n\n全面修复：动态底牌、徽章遮牌、旧出牌去重、无文字过牌、旋转捕获、状态守恒和超时自恢复。\n仅本地分析，不上传截图，不自动点击游戏。");
         status.setTextSize(18);
         Button overlay = new Button(this);
         overlay.setText("授予悬浮窗权限");

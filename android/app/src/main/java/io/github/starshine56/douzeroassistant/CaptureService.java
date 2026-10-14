@@ -3,7 +3,9 @@ package io.github.starshine56.douzeroassistant;
 import android.app.*;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
@@ -17,6 +19,7 @@ public final class CaptureService extends Service {
     private static final String CHANNEL = "screen-analysis";
     private MediaProjection projection;
     private ImageReader reader;
+    private VirtualDisplay display;
 
     @Override public void onCreate() {
         super.onCreate();
@@ -43,13 +46,29 @@ public final class CaptureService extends Service {
         int height = getResources().getDisplayMetrics().heightPixels;
         int density = getResources().getDisplayMetrics().densityDpi;
         reader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2);
-        projection.createVirtualDisplay("DouZeroAssistant", width, height, density,
+        display = projection.createVirtualDisplay("DouZeroAssistant", width, height, density,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, reader.getSurface(), null, null);
         reader.setOnImageAvailableListener(r -> FramePipeline.offerLatest(r), null);
         return START_NOT_STICKY;
     }
 
+    @Override public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (projection == null || display == null) return;
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int density = getResources().getDisplayMetrics().densityDpi;
+        ImageReader replacement = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2);
+        replacement.setOnImageAvailableListener(r -> FramePipeline.offerLatest(r), null);
+        display.resize(width, height, density);
+        display.setSurface(replacement.getSurface());
+        ImageReader old = reader;
+        reader = replacement;
+        if (old != null) old.close();
+    }
+
     @Override public void onDestroy() {
+        if (display != null) display.release();
         if (reader != null) reader.close();
         if (projection != null) projection.stop();
         super.onDestroy();

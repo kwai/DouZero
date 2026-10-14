@@ -24,6 +24,7 @@
         <service
             android:name=".CaptureService"
             android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize"
             android:foregroundServiceType="mediaProjection" />
         <service
             android:name=".OverlayService"

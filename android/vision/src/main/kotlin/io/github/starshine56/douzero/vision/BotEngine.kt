@@ -462,6 +462,10 @@ class BotEngine(
     private fun findRole(): Position? {
         val n = cards('m', Regions.MY_HAND).size
         if (n == 20) return Position.LANDLORD
+        // Some skins cover the first hand card with a landlord badge, leaving only 19 visible.
+        if (n >= 18 && vision.locateIn("landlord", org.opencv.core.Rect(0, 180, vision.width, 520), 0.63) != null) {
+            return Position.LANDLORD
+        }
         if (n == 17) {
             // the landlord plays first; check the right side first like upstream
             if (cards('o', Regions.RIGHT_PLAYED).isNotEmpty()) return Position.LANDLORD_UP
@@ -489,10 +493,16 @@ class BotEngine(
             if (pos == null) sleep(200)
         }
         listener.onRole(pos)
-        val hand = waitHand(if (pos == Position.LANDLORD) 20 else 17)
-        val state = GameState(pos, hand.env(), three)
+        val visibleHand = cards('m', Regions.MY_HAND)
+        val initialHand = if (pos == Position.LANDLORD && bidHand?.size == 17) {
+            // More reliable than reading a 20-card row whose first card is covered by the landlord badge.
+            (bidHand!! + three).sorted()
+        } else {
+            waitHand(if (pos == Position.LANDLORD) 20 else 17).env()
+        }
+        val state = GameState(pos, initialHand, three)
         playedThisRun = true
-        log("我的角色：${pos.label}，手牌：${hand.sortedText()}，底牌：${Cards.formatDesc(three)}")
+        log("我的角色：${pos.label}，手牌：${Cards.formatDesc(initialHand)}（当前可见${visibleHand.size}张），底牌：${Cards.formatDesc(three)}")
         listener.onHand(Cards.formatDesc(state.hand))
         updateRemaining(state)
         status("对局中")

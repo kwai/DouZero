@@ -54,7 +54,8 @@ object AssistantRuntime {
                 val noTap = Tapper { _, _ -> Unit }
                 val layout = Layout(mapOf(
                     // Measured from the supplied 2400x1080 independent-app screenshot after scaling to work height 810.
-                    Regions.LANDLORD_CARDS to RegionSpec(1040, 5, 110, 45, Anchor.LEFT),
+                    // Bottom cards move to either side of the counter across game phases; scan the whole top band.
+                    Regions.LANDLORD_CARDS to RegionSpec(560, 0, 650, 105, Anchor.LEFT),
                     Regions.RIGHT_PLAYED to RegionSpec(900, 155, 520, 185, Anchor.LEFT),
                     // Search the full lower half; physical 17/20-card filtering selects the actual hand row.
                     Regions.MY_HAND to RegionSpec(0, 400, 2400, 410, Anchor.LEFT),

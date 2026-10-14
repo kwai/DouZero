@@ -285,9 +285,9 @@ class BotEngine(
             // started in the middle of a game: join it
             if (!needFreshDeal && hand > 0) break
             status(if (needFreshDeal && hand in 1..16) {
-                "检测到进行中牌局（当前手牌$hand张），缺少此前出牌历史；为避免错误推荐，等待下一局完整发牌"
+                "检测到进行中牌局（当前手牌${hand}张），缺少此前出牌历史；为避免错误推荐，等待下一局完整发牌"
             } else {
-                "等待新局完整发牌（当前识别到手牌$hand张）"
+                "等待新局完整发牌（当前识别到手牌${hand}张）"
             })
             sleep(500)
         }

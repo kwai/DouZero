@@ -273,7 +273,7 @@ class BotEngine(
             val hand = cards('m', Regions.MY_HAND).size
             if (hand > 0 || TABLE_BUTTONS.any { vision.locate(it, Regions.BUTTONS) != null }) break
             val chat = vision.locate("chat", Regions.CHAT, 0.0)?.score ?: 0.0
-            status("未进入游戏（画面 ${vision.width}x${vision.work.rows()}，聊天按钮相似度 ${String.format(Locale.ROOT, "%.1f", chat)}，手牌 0 张）")
+            status("未进入游戏（画面 ${vision.width}x${vision.work.rows()}，聊天 ${String.format(Locale.ROOT, "%.2f", chat)}，手牌0张；${vision.diagnostic()}）")
             sleep(1000)
         }
         while (true) {

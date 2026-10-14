@@ -83,6 +83,22 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
 
     val width: Int get() = work.cols()
 
+    /** Compact live diagnostics used when a device captures frames but no cards match. */
+    fun diagnostic(region: String = Regions.MY_HAND): String {
+        if (work.empty()) return "无画面"
+        val mean = Core.mean(work)
+        val r = rect(region)
+        var best = -1.0
+        for (rank in Cards.REAL_DESC) {
+            val t = templates.gray("m$rank") ?: continue
+            withMatch(gray(), r, t) { data, _, _ ->
+                for (v in data) if (!v.isNaN() && v > best) best = v.toDouble()
+            }
+        }
+        val light = (mean.`val`[0] + mean.`val`[1] + mean.`val`[2]) / 3.0
+        return "亮度 ${"%.0f".format(java.util.Locale.ROOT, light)} · 手牌最高 ${"%.2f".format(java.util.Locale.ROOT, best)} · ROI ${r.x},${r.y},${r.width}x${r.height}"
+    }
+
     fun rect(region: String): Rect = clamp(Layout.toWork(layout[region], width))
 
     private fun clamp(r: Rect): Rect {
@@ -156,7 +172,16 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
                 val clash = kept.any { abs(it.match.x - m.x) <= minDx && abs(it.match.y - m.y) <= m.h * 1.6 }
                 if (!clash) kept += c
             }
-            return kept.sortedBy { it.match.x }
+            val sorted = kept.sortedBy { it.match.x }
+            if (set != 'm' || sorted.isEmpty()) return sorted
+            // The hand is one horizontal row. Ignore unrelated glyph-like text/buttons elsewhere in the lower screen.
+            return sorted.maxByOrNull { seed ->
+                val row = sorted.filter { abs(it.match.y - seed.match.y) <= maxOf(it.match.h, seed.match.h) * 1.8 }
+                val physical = row.size <= 20 && row.groupingBy { it.rank }.eachCount()
+                    .all { (rank, n) -> n <= if (rank in "DX") 2 else 4 }
+                (if (physical) 1000 else 0) + row.size
+            }?.let { seed -> sorted.filter { abs(it.match.y - seed.match.y) <= maxOf(it.match.h, seed.match.h) * 1.8 } }
+                ?: sorted
         }
         val preferred = if (set != 'm') 1.00 else handGlyphScale ?: when {
             width <= 1520 -> 0.90
@@ -168,7 +193,7 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
         // known public-client scales when the preferred scale cannot form a physical 17/20-card deal.
         if (set == 'm' && hits.size !in setOf(17, 20)) {
             val choices = listOf(0.90, 1.00, 1.15).distinct().associateWith(::detect)
-                .filterValues { row -> row.size <= 20 && row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 1 else 4 } }
+                .filterValues { row -> row.size <= 20 && row.groupingBy { it.rank }.eachCount().all { (rank, n) -> n <= if (rank in "DX") 2 else 4 } }
             val best = choices.maxWithOrNull(compareBy<Map.Entry<Double, List<CardHit>>> { if (it.value.size in setOf(17, 20)) 1 else 0 }
                 .thenBy { it.value.size }.thenBy { e -> e.value.sumOf { it.match.score } })
             if (best != null) {

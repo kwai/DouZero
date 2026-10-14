@@ -37,7 +37,7 @@ jobs:
       - name: Verify and name APK
         run: |
           SHORT_SHA="${GITHUB_SHA::7}"
-          NAME="douzero-assistant-v0.2.0-${SHORT_SHA}-arm64.apk"
+          NAME="douzero-assistant-v0.2.1-${SHORT_SHA}-arm64.apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk "$NAME"
           unzip -l "$NAME" | grep -q 'lib/arm64-v8a/'
           test -z "$(unzip -l "$NAME" | grep -E 'lib/(armeabi-v7a|x86|x86_64)/' || true)"
@@ -46,7 +46,7 @@ jobs:
           echo "APK_NAME=$NAME" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v4
         with:
-          name: douzero-assistant-v0.2.0-${{ github.sha }}-arm64
+          name: douzero-assistant-v0.2.1-${{ github.sha }}-arm64
           path: |
             ${{ env.APK_NAME }}
             ${{ env.APK_NAME }}.sha256

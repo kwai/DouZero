@@ -21,7 +21,7 @@ public final class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(48, 48, 48, 48);
         TextView status = new TextView(this);
-        status.setText("版本 0.4.0-clean-ui（versionCode 8）\n\n默认仅显示状态、建议和备选；手牌与评分放入详情，完整记牌器使用独立可拖动悬浮块。\n仅本地分析，不上传截图，不自动点击游戏。");
+        status.setText("版本 0.4.1-draggable（versionCode 9）\n\nAI 推荐与记牌器为两个独立悬浮块；按住各自的 ✥ 标题栏拖动，位置自动保存且不会移出屏幕。\n仅本地分析，不上传截图，不自动点击游戏。");
         status.setTextSize(18);
         Button overlay = new Button(this);
         overlay.setText("授予悬浮窗权限");

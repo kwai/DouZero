@@ -22,6 +22,7 @@ public final class OverlayService extends Service {
     private WindowManager.LayoutParams aiParams, recorderParams;
     private final Handler main = new Handler(Looper.getMainLooper());
     private TextView headline, recommendation, alternatives, detailToggle, hide, detailText, recorderText;
+    private android.content.SharedPreferences prefs;
     private boolean collapsed, detailsShown;
 
     private final Runnable refresh = new Runnable() {
@@ -33,7 +34,7 @@ public final class OverlayService extends Service {
             detailText.setText("手牌：" + empty(s.hand()) + "\n上家：" + empty(s.leftPlay()) +
                     "  下家：" + empty(s.rightPlay()) + "  底牌：" + empty(s.bottom()) +
                     "\n评分：" + empty(s.candidates()));
-            recorderText.setText("记牌器\n" + s.remaining());
+            recorderText.setText(s.remaining());
             main.postDelayed(this, 350);
         }
     };
@@ -41,6 +42,9 @@ public final class OverlayService extends Service {
     @Override public void onCreate() {
         super.onCreate();
         wm = getSystemService(WindowManager.class);
+        prefs = getSharedPreferences("overlay_positions", MODE_PRIVATE);
+        TextView aiDrag = text("✥", 19, 0xffffd54f);
+        aiDrag.setPadding(4, 2, 14, 2);
         headline = text("识别中", 14, 0xffffd54f);
         recommendation = text("建议：--", 19, 0xff81c784);
         alternatives = text("备选：--", 12, Color.LTGRAY);
@@ -52,18 +56,20 @@ public final class OverlayService extends Service {
         details.setVisibility(View.GONE); details.addView(detailText);
 
         LinearLayout header = new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL);
-        header.addView(headline); header.addView(detailToggle); header.addView(hide);
+        header.addView(aiDrag); header.addView(headline); header.addView(detailToggle); header.addView(hide);
         aiPanel = panel(); aiPanel.addView(header); aiPanel.addView(recommendation); aiPanel.addView(alternatives); aiPanel.addView(details);
-        aiParams = params(8, 8);
-        bindDrag(headline, aiPanel, aiParams, true);
+        aiParams = params(prefs.getInt("ai_x", 8), prefs.getInt("ai_y", 8));
+        bindDrag(aiDrag, aiPanel, aiParams, true, "ai");
         detailToggle.setOnClickListener(v -> setDetails(!detailsShown));
         hide.setOnClickListener(v -> setCollapsed(true));
         wm.addView(aiPanel, aiParams);
 
-        recorderText = text("记牌器\n等待牌局", 11, 0xff90caf9);
-        recorderPanel = panel(); recorderPanel.addView(recorderText);
-        recorderParams = params(8, 220);
-        bindDrag(recorderText, recorderPanel, recorderParams, false);
+        TextView recorderDrag = text("✥ 记牌器", 13, 0xff90caf9);
+        recorderDrag.setPadding(4, 2, 8, 4);
+        recorderText = text("等待牌局", 11, 0xff90caf9);
+        recorderPanel = panel(); recorderPanel.addView(recorderDrag); recorderPanel.addView(recorderText);
+        recorderParams = params(prefs.getInt("recorder_x", 8), prefs.getInt("recorder_y", 220));
+        bindDrag(recorderDrag, recorderPanel, recorderParams, false, "recorder");
         wm.addView(recorderPanel, recorderParams);
         main.post(refresh);
     }
@@ -107,15 +113,22 @@ public final class OverlayService extends Service {
         wm.updateViewLayout(aiPanel, aiParams);
     }
 
-    private void bindDrag(View handle, View target, WindowManager.LayoutParams p, boolean restoreOnTap) {
+    private void bindDrag(View handle, View target, WindowManager.LayoutParams p, boolean restoreOnTap, String key) {
         final float[] down = new float[4]; final boolean[] moved = new boolean[1];
         handle.setOnTouchListener((v, e) -> {
             if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 moved[0] = false; down[0] = e.getRawX(); down[1] = e.getRawY(); down[2] = p.x; down[3] = p.y;
             } else if (e.getActionMasked() == MotionEvent.ACTION_MOVE) {
                 float dx=e.getRawX()-down[0], dy=e.getRawY()-down[1]; if (Math.abs(dx)+Math.abs(dy)>8) moved[0]=true;
-                p.x=(int)(down[2]+dx); p.y=(int)(down[3]+dy); wm.updateViewLayout(target,p);
-            } else if (e.getActionMasked() == MotionEvent.ACTION_UP && restoreOnTap && collapsed && !moved[0]) setCollapsed(false);
+                int maxX=Math.max(0,getResources().getDisplayMetrics().widthPixels-Math.max(target.getWidth(),80));
+                int maxY=Math.max(0,getResources().getDisplayMetrics().heightPixels-Math.max(target.getHeight(),50));
+                p.x=Math.max(0,Math.min(maxX,(int)(down[2]+dx)));
+                p.y=Math.max(0,Math.min(maxY,(int)(down[3]+dy)));
+                wm.updateViewLayout(target,p);
+            } else if (e.getActionMasked() == MotionEvent.ACTION_UP) {
+                if (restoreOnTap && collapsed && !moved[0]) setCollapsed(false);
+                if (moved[0]) prefs.edit().putInt(key+"_x",p.x).putInt(key+"_y",p.y).apply();
+            }
             return true;
         });
     }

@@ -284,7 +284,11 @@ class BotEngine(
             if (hand >= 17 && cards('z', Regions.LANDLORD_CARDS).isEmpty()) break
             // started in the middle of a game: join it
             if (!needFreshDeal && hand > 0) break
-            status("游戏未开始（识别到手牌 $hand 张）")
+            status(if (needFreshDeal && hand in 1..16) {
+                "检测到进行中牌局（当前手牌$hand张），缺少此前出牌历史；为避免错误推荐，等待下一局完整发牌"
+            } else {
+                "等待新局完整发牌（当前识别到手牌$hand张）"
+            })
             sleep(500)
         }
         status("开始游戏")
@@ -392,6 +396,12 @@ class BotEngine(
                 hand = waitHand(17, 20)
                 val cardList = hand.env()
                 if (cardList.size == 17) bidHand = cardList
+                listener.onHand(hand.sortedText())
+                if (!settings.autoPlay) {
+                    listener.onSuggestion(if (qiang != null) "请自行选择抢/不抢" else "请自行选择叫/不叫")
+                    sleep(1200)
+                    continue
+                }
                 val score = ai.advisor.bidScore(cardList)
                 val farmer = ai.advisor.farmerScore(cardList)
                 listener.onHand(hand.sortedText())
@@ -427,6 +437,12 @@ class BotEngine(
             val isLandlord = cardList.size == 20
             val three = (if (isLandlord) threeFromHand(cardList) else null) ?: waitThree()
             knownThree = three
+            listener.onThreeCards(Cards.formatDesc(three))
+            listener.onHand(hand.sortedText())
+            if (!settings.autoPlay) {
+                listener.onSuggestion("请自行选择是否加倍")
+                return
+            }
             val winRate = if (isLandlord) ai.advisor.landlordScore(cardList, three)
             else ai.advisor.farmerUpScore(cardList)
             listener.onThreeCards(Cards.formatDesc(three))

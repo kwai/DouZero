@@ -40,6 +40,7 @@ class OrtModels(private val load: (String) -> ByteArray, private val threads: In
     private val env: OrtEnvironment = OrtEnvironment.getEnvironment()
     private val sessions = ArrayList<OrtSession>()
 
+    @Synchronized
     private fun session(name: String): OrtSession {
         val opts = OrtSession.SessionOptions().apply {
             setIntraOpNumThreads(threads)
@@ -48,7 +49,8 @@ class OrtModels(private val load: (String) -> ByteArray, private val threads: In
         return env.createSession(load(name), opts).also { sessions += it }
     }
 
-    private inner class Value(private val s: OrtSession) : ValueModel {
+    private inner class Value(private val name: String) : ValueModel {
+        private val s: OrtSession by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { session(name) }
         override fun predict(z: FloatArray, x: FloatArray, n: Int): FloatArray {
             OnnxTensor.createTensor(env, FloatBuffer.wrap(z), longArrayOf(n.toLong(), 40, 54)).use { zt ->
                 OnnxTensor.createTensor(env, FloatBuffer.wrap(x), longArrayOf(n.toLong(), 15)).use { xt ->
@@ -58,7 +60,8 @@ class OrtModels(private val load: (String) -> ByteArray, private val threads: In
         }
     }
 
-    private inner class Hand(private val s: OrtSession) : HandModel {
+    private inner class Hand(private val name: String) : HandModel {
+        private val s: OrtSession by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { session(name) }
         override fun predict(x: FloatArray, n: Int): FloatArray {
             OnnxTensor.createTensor(env, FloatBuffer.wrap(x), longArrayOf(n.toLong(), 60)).use { xt ->
                 s.run(mapOf("x" to xt)).use { r -> return flatten(r, n) }
@@ -73,12 +76,12 @@ class OrtModels(private val load: (String) -> ByteArray, private val threads: In
     }
 
     val models: ModelSet = ModelSet(
-        landlord = Value(session("resnet_landlord.onnx")),
-        landlordUp = Value(session("resnet_landlord_up.onnx")),
-        landlordDown = Value(session("resnet_landlord_down.onnx")),
-        bid = Hand(session("bid.onnx")),
-        farmer = Hand(session("farmer.onnx")),
-        farmerUp = Hand(session("farmer_up.onnx")),
+        landlord = Value("resnet_landlord.onnx"),
+        landlordUp = Value("resnet_landlord_up.onnx"),
+        landlordDown = Value("resnet_landlord_down.onnx"),
+        bid = Hand("bid.onnx"),
+        farmer = Hand("farmer.onnx"),
+        farmerUp = Hand("farmer_up.onnx"),
     )
 
     override fun close() {

@@ -189,7 +189,7 @@ class Vision(val templates: TemplateStore, @Volatile var layout: Layout) {
             else -> 1.00
         }
         var hits = detect(preferred)
-        if (set == 'z') {
+        if (set == 'z' && r.width > 300) {
             fun triple(rowIn: List<CardHit>): List<CardHit>? {
                 if (rowIn.size == 3) return rowIn
                 return rowIn.sortedBy { it.match.x }.windowed(3).filter { row ->

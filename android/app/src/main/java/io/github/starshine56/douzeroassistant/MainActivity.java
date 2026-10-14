@@ -21,7 +21,7 @@ public final class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(48, 48, 48, 48);
         TextView status = new TextView(this);
-        status.setText("仅本地分析，不读取短信、位置、设备 ID，也不自动点击游戏。\n\n第一版正在接入：屏幕识牌 → 牌局校验 → DouZero 推荐。");
+        status.setText("版本 0.2.0-preview（versionCode 2）\n\n仅本地分析，不读取短信、位置、设备 ID，也不自动点击游戏。\n已包含：自动识牌、完整记牌器、DouZero Top 3 和一键隐藏。");
         status.setTextSize(18);
         Button overlay = new Button(this);
         overlay.setText("授予悬浮窗权限");

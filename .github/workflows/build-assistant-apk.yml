@@ -36,17 +36,20 @@ jobs:
         run: gradle :core:test :vision:test :app:assembleDebug --stacktrace
       - name: Verify and name APK
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk douzero-assistant-arm64-preview.apk
-          unzip -l douzero-assistant-arm64-preview.apk | grep -q 'lib/arm64-v8a/'
-          test -z "$(unzip -l douzero-assistant-arm64-preview.apk | grep -E 'lib/(armeabi-v7a|x86|x86_64)/' || true)"
-          test "$(unzip -l douzero-assistant-arm64-preview.apk | grep -c 'assets/models/.*onnx')" -eq 6
-          sha256sum douzero-assistant-arm64-preview.apk | tee douzero-assistant-arm64-preview.apk.sha256
+          SHORT_SHA="${GITHUB_SHA::7}"
+          NAME="douzero-assistant-v0.2.0-${SHORT_SHA}-arm64.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$NAME"
+          unzip -l "$NAME" | grep -q 'lib/arm64-v8a/'
+          test -z "$(unzip -l "$NAME" | grep -E 'lib/(armeabi-v7a|x86|x86_64)/' || true)"
+          test "$(unzip -l "$NAME" | grep -c 'assets/models/.*onnx')" -eq 6
+          sha256sum "$NAME" | tee "$NAME.sha256"
+          echo "APK_NAME=$NAME" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v4
         with:
-          name: douzero-assistant-arm64-preview
+          name: douzero-assistant-v0.2.0-${{ github.sha }}-arm64
           path: |
-            douzero-assistant-arm64-preview.apk
-            douzero-assistant-arm64-preview.apk.sha256
+            ${{ env.APK_NAME }}
+            ${{ env.APK_NAME }}.sha256
           if-no-files-found: error
           retention-days: 14
       - name: Publish rolling preview release
@@ -58,5 +61,5 @@ jobs:
             --target "$GITHUB_SHA" --prerelease \
             --title "Android AI Assistant Preview" \
             --notes "ARM64 preview: local MediaProjection/OpenCV recognition, observed-game state, six ONNX models, and read-only Top-3 overlay. No AccessibilityService or automatic clicking. Built from $GITHUB_SHA." \
-            douzero-assistant-arm64-preview.apk \
-            douzero-assistant-arm64-preview.apk.sha256
+            "${APK_NAME}" \
+            "${APK_NAME}.sha256"
